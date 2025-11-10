@@ -1,0 +1,10 @@
+{
+    "sql": "INSERT INTO equipos (codigo,nombre,categoria,estado,created_at) VALUES (?,?,?,?,NOW())",
+    "params": [
+        "EQ-003",
+        "ASUS",
+        "Eléctrico",
+        "fuera_de_servicio"
+    ],
+    "ts": "2025-11-09T12:20:26+00:00"
+}
