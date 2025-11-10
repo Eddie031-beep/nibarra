@@ -1,37 +1,43 @@
 <?php
-// public/index.php
-require_once dirname(__DIR__) . '/config/app.php';
-require_once BASE_PATH . '/src/helpers/db.php';
+require_once dirname(__DIR__).'/app.php';
+require_once BASE_PATH.'/core/Response.php';
+require_once BASE_PATH.'/core/Auth.php';
 
-// Rutas → vista a renderizar
 $routes = [
-    ''                => 'calendario/index',     // home
-    'login'           => 'auth/login',
-    'register'        => 'auth/register',
-    'equipos'         => 'equipos/index',
-    'equipos/crear'   => 'equipos/create',
-    'mantenimiento'   => 'mantenimiento/index',
-    'calendario'      => 'calendario/index',
+  ['GET','/','EquiposController@index'],
+  ['GET','/equipos','EquiposController@index'],
+  ['POST','/equipos/store','EquiposController@store'],
+  ['POST','/equipos/update/{id}','EquiposController@update'],
+  ['POST','/equipos/delete/{id}','EquiposController@destroy'],
+
+  ['GET','/calendario','CalendarioController@index'],
+  ['POST','/calendario/store','CalendarioController@store'],
+  ['POST','/calendario/delete/{id}','CalendarioController@destroy'],
+
+  ['GET','/mantenimiento','MantenimientoController@index'],
+  ['POST','/mantenimiento/mover','MantenimientoController@mover'],
+  ['POST','/mantenimiento/avance','MantenimientoController@avance'],
+  ['POST','/mantenimiento/tareaToggle','MantenimientoController@tareaToggle'],
+  ['POST','/mantenimiento/tareaNueva','MantenimientoController@tareaNueva'],
+
+  ['GET','/login','AuthController@loginView'],
+  ['POST','/login','AuthController@login'],
+  ['GET','/logout','AuthController@logout'],
+
+  ['GET','/health/replica','EquiposController@replicaHealth'], // evidencia réplica (B)
 ];
 
-$p = $_GET['p'] ?? '';
-$view = $routes[$p] ?? null;
-
-http_response_code($view ? 200 : 404);
-
-// Layout
-require VIEWS_PATH . '/layout/header.php';
-
-if ($view) {
-    $file = VIEWS_PATH . '/' . $view . '.php';
-    if (is_file($file)) {
-        require $file;
-    } else {
-        echo "<h2>Vista no encontrada: {$view}</h2>";
-    }
-} else {
-    echo '<h2>404 - Página no encontrada</h2>';
-    echo '<p>La ruta solicitada no existe.</p>';
+// Resolver ruta
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+foreach ($routes as [$m,$path,$handler]) {
+  $regex = '#^'.preg_replace('#\{[a-zA-Z_]+\}#','([a-zA-Z0-9_-]+)',$path).'$#';
+  if ($m===$method && preg_match($regex, $uri, $matches)) {
+    [$ctrl,$act]=explode('@',$handler);
+    require_once BASE_PATH."/controllers/$ctrl.php";
+    $c = new $ctrl;
+    array_shift($matches);
+    return call_user_func_array([$c,$act], $matches);
+  }
 }
-
-require VIEWS_PATH . '/layout/footer.php';
+Response::status(404,'Not Found');

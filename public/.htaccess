@@ -1,11 +1,5 @@
-# public/.htaccess
 RewriteEngine On
 RewriteBase /nibarra/public/
-
-# Si el archivo o carpeta existe, lo sirve tal cual (IMPORTANTE para CSS/JS)
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# Si no existe, envía todo a index.php?p=...
-RewriteRule ^(.+)$ index.php?p=$1 [QSA,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
