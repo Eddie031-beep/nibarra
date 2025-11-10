@@ -2,7 +2,7 @@
 RewriteEngine On
 RewriteBase /nibarra/public/
 
-# Si el archivo o carpeta existe, lo sirve tal cual
+# Si el archivo o carpeta existe, lo sirve tal cual (IMPORTANTE para CSS/JS)
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
