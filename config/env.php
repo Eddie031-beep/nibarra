@@ -15,7 +15,9 @@ define('ENV_DB', [
 ]);
 
 define('ENV_APP', [
-  'BASE_URL'   => 'http://192.168.1.142/nibarra/public',
-  'ASSETS_URL' => '/nibarra/public/assets', // no usamos assets externos, va inline; se deja por si
+  // IMPORTANTE: con Alias /nibarra ya NO va /public en la URL base
+  'BASE_URL'   => 'http://192.168.1.142/nibarra',
+  // si tienes assets en public/assets, el path público correcto es /nibarra/assets
+  'ASSETS_URL' => '/nibarra/assets',
   'APP_ENV'    => 'prod'
 ]);

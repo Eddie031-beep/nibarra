@@ -1,7 +1,7 @@
 <?php Auth::start(); $u=Auth::user(); ?>
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title><?= safe(APP_NAME) ?></title>
+<title><?= safe(APP_NAME ?? 'Nibarra') ?></title>
 <style>
 :root{--bg:#0e1726;--panel:#131b2e;--muted:#94a3b8;--brand:#4f46e5;--ok:#16a34a;--warn:#f59e0b;--err:#ef4444;}
 *{box-sizing:border-box} body{margin:0;background:#0b1220;color:#e5e7eb;font-family:Inter,system-ui,Segoe UI,Roboto}
@@ -37,18 +37,32 @@ document.addEventListener('keydown', e => {
   if((e.ctrlKey||e.metaKey) && ['u','s','c','p'].includes(k)) e.preventDefault();
 });
 </script>
-</head><body class="nocopy">
+</head>
+<?php
+  // $route lo setea el front controller; si no existe, lo derivamos de REQUEST_URI
+  $route = $route ?? parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+?>
+<body class="nocopy">
 <header class="header">
   <div class="logo">
-    <span>🛠️</span><span><?= safe(APP_NAME) ?></span>
-    <span class="badge"><?= $u? 'Hola, '.safe($u['username']) : 'Invitado' ?></span>
+    <span>🛠️</span><span><?= safe(APP_NAME ?? 'Nibarra') ?></span>
+    <span class="badge">
+      <?= $u ? 'Hola, '.safe($u['nombre'] ?? $u['email'] ?? 'Usuario') : 'Invitado' ?>
+    </span>
   </div>
   <nav>
-    <a href="<?= ENV_APP['BASE_URL'].'/equipos' ?>" class="<?= $uri??''==='/equipos'?'active':''?>">Equipos</a>
-    <a href="<?= ENV_APP['BASE_URL'].'/calendario' ?>" class="<?= $uri??''==='/calendario'?'active':''?>">Calendario</a>
-    <a href="<?= ENV_APP['BASE_URL'].'/mantenimiento' ?>" class="<?= $uri??''==='/mantenimiento'?'active':''?>">Mantenimiento</a>
-    <?php if($u): ?><a href="<?= ENV_APP['BASE_URL'].'/logout' ?>">Salir</a><?php else: ?>
-    <a href="<?= ENV_APP['BASE_URL'].'/login' ?>">Ingresar</a><?php endif; ?>
+    <?php
+      $base = ENV_APP['BASE_URL'];
+      $is = function($p) use($route){ return rtrim($route,'/') === $p; };
+    ?>
+    <a href="<?= $base ?>/equipos" class="<?= $is('/equipos')?'active':'' ?>">Equipos</a>
+    <a href="<?= $base ?>/calendario" class="<?= $is('/calendario')?'active':'' ?>">Calendario</a>
+    <a href="<?= $base ?>/mantenimiento" class="<?= $is('/mantenimiento')?'active':'' ?>">Mantenimiento</a>
+    <?php if($u): ?>
+      <a href="<?= $base ?>/logout">Salir</a>
+    <?php else: ?>
+      <a href="<?= $base ?>/login">Ingresar</a>
+    <?php endif; ?>
   </nav>
 </header>
 <main class="main">

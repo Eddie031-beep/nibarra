@@ -1,12 +1,8 @@
 <?php
 class Response {
-  public static function json($data, $code=200){
+  public static function json($data, int $code = 200){
     http_response_code($code);
-    header('Content-Type: application/json');
-    echo json_encode($data);
-  }
-  public static function status($code,$text=''){
-    http_response_code($code);
-    echo "<h1>$code $text</h1>";
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
   }
 }
