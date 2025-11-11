@@ -98,19 +98,58 @@ class Mantenimiento {
    * @param array $d Datos del mantenimiento
    * @return int ID del mantenimiento creado
    */
-  public static function create($d){
-    $sql = "INSERT INTO mantenimientos(equipo_id, titulo, descripcion, tipo, prioridad, fecha_programada, 
-            costo_estimado, estado, creado_por) 
-            VALUES(:equipo_id, :titulo, :descripcion, :tipo, :prioridad, :fecha_programada, 
-            :costo_estimado, :estado, :creado_por)";
-    
-    DB::pdo()->prepare($sql)->execute($d);
-    $id = DB::pdo()->lastInsertId();
-    
-    log_audit('mantenimientos', $id, 'insert', $d);
-    
-    return $id;
-  }
+ public static function create($d){
+  $sql = "INSERT INTO mantenimientos (
+            equipo_id, titulo, descripcion, tipo, prioridad, fecha_programada,
+            costo_estimado, estado, tecnico_id
+          ) VALUES (
+            :equipo_id, :titulo, :descripcion, :tipo, :prioridad, :fecha_programada,
+            :costo_estimado, :estado, :tecnico_id
+          )";
+
+  $pdo = DB::pdo();
+  $st  = $pdo->prepare($sql);
+
+  // Normaliza datos
+  $equipo_id       = (int)($d['equipo_id'] ?? 0);
+  $titulo          = trim($d['titulo'] ?? '');
+  $descripcion     = trim($d['descripcion'] ?? '');
+  $tipo            = $d['tipo'] ?? 'preventivo';
+  $prioridad       = $d['prioridad'] ?? 'media';
+  $fecha_programada= ($d['fecha_programada'] ?? '') ?: null;  // '' -> NULL
+  $costo_estimado  = ($d['costo_estimado']   ?? '') === '' ? null : $d['costo_estimado'];
+  $estado          = $d['estado'] ?? 'pendiente';
+  $tecnico_id      = isset($d['tecnico_id']) && $d['tecnico_id'] !== '' ? (int)$d['tecnico_id'] : null;
+
+  // Bind 1-a-1 (evita HY093)
+  $st->bindValue(':equipo_id', $equipo_id, \PDO::PARAM_INT);
+  $st->bindValue(':titulo', $titulo, \PDO::PARAM_STR);
+  $st->bindValue(':descripcion', $descripcion, \PDO::PARAM_STR);
+  $st->bindValue(':tipo', $tipo, \PDO::PARAM_STR);
+  $st->bindValue(':prioridad', $prioridad, \PDO::PARAM_STR);
+
+  if ($fecha_programada === null) $st->bindValue(':fecha_programada', null, \PDO::PARAM_NULL);
+  else                            $st->bindValue(':fecha_programada', $fecha_programada, \PDO::PARAM_STR);
+
+  if ($costo_estimado === null)   $st->bindValue(':costo_estimado', null, \PDO::PARAM_NULL);
+  else                            $st->bindValue(':costo_estimado', $costo_estimado, \PDO::PARAM_STR);
+
+  $st->bindValue(':estado', $estado, \PDO::PARAM_STR);
+
+  if ($tecnico_id === null)       $st->bindValue(':tecnico_id', null, \PDO::PARAM_NULL);
+  else                            $st->bindValue(':tecnico_id', $tecnico_id, \PDO::PARAM_INT);
+
+  $st->execute();
+
+  $id = $pdo->lastInsertId();
+  log_audit('mantenimientos', $id, 'insert', [
+    'equipo_id'=>$equipo_id,'titulo'=>$titulo,'tipo'=>$tipo,'prioridad'=>$prioridad,
+    'fecha_programada'=>$fecha_programada,'costo_estimado'=>$costo_estimado,
+    'estado'=>$estado,'tecnico_id'=>$tecnico_id
+  ]);
+  return $id;
+}
+
   
   /**
    * Eliminar mantenimiento

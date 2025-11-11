@@ -30,7 +30,7 @@ class MantenimientoController {
       'fecha_programada' => $fecha_programada,
       'costo_estimado' => $costo_estimado,
       'estado' => 'pendiente',
-      'creado_por' => Auth::user()['id'] ?? null
+      'tecnico_id' => Auth::user()['id'] ?? null
     ];
     
     $mantenimiento_id = Mantenimiento::create($d);
