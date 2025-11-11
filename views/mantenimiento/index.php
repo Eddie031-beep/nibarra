@@ -37,7 +37,6 @@ $equipos = Equipo::all();
     .newtask input{flex:1;padding:6px;border-radius:8px;border:1px solid #243044;background:#0b1220;color:#e5e7eb;font-size:11px}
     .newtask button{padding:6px 8px;font-size:11px}
     
-    /* MODAL STYLES */
     .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;animation:fadeIn .3s ease}
     .modal.active{display:flex}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -69,11 +68,12 @@ $equipos = Equipo::all();
     
     .task-list{display:flex;flex-direction:column;gap:8px}
     .task-item{display:flex;align-items:center;gap:10px;padding:10px;background:#0b1220;border:1px solid #1e293b;border-radius:8px;transition:all .2s;position:relative}
-    .task-item:hover{border-color:#334155}
-    .task-item input[type="checkbox"]{width:18px;height:18px;accent-color:#4f46e5;cursor:pointer}
-    .task-item label{flex:1;color:#cbd5e1;font-size:13px;cursor:pointer}
+    .task-item:hover{border-color:#334155;background:#0f172a}
+    .task-item input[type="checkbox"]{width:18px;height:18px;accent-color:#4f46e5;cursor:pointer;flex-shrink:0}
+    .task-item label{flex:1;color:#cbd5e1;font-size:13px;cursor:pointer;user-select:none}
     .task-item.completed label{text-decoration:line-through;color:#64748b}
-    .task-item .delete-task-btn{background:#7f1d1d;border:0;color:white;border-radius:4px;padding:4px 8px;font-size:11px;cursor:pointer;transition:all .2s}
+    .task-item .delete-task-btn{background:#7f1d1d;border:0;color:white;border-radius:4px;padding:4px 8px;font-size:11px;cursor:pointer;transition:all .2s;flex-shrink:0;opacity:0}
+    .task-item:hover .delete-task-btn{opacity:1}
     .task-item .delete-task-btn:hover{background:#991b1b;transform:scale(1.05)}
     
     .priority-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600}
@@ -101,6 +101,7 @@ $equipos = Equipo::all();
     
     .scroll-indicator{text-align:center;padding:8px;color:#64748b;font-size:11px;animation:bounce 2s infinite}
     @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
     
     @media(max-width:1200px){.board{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:768px){
@@ -168,7 +169,6 @@ $equipos = Equipo::all();
     <?php endforeach; ?>
   </div>
 
-  <!-- Modal Vista Previa -->
   <div class="modal" id="modalPreview">
     <div class="modal-content">
       <div class="modal-header">
@@ -181,12 +181,10 @@ $equipos = Equipo::all();
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="cerrarPreview()">Cerrar</button>
-        <button class="btn-primary" onclick="editarDesdePreview()">✏️ Editar</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Nuevo Mantenimiento -->
   <div class="modal" id="modalNuevo">
     <div class="modal-content">
       <div class="modal-header">
@@ -340,6 +338,7 @@ $equipos = Equipo::all();
                              onchange="toggleTarea(${tarea.id}, this)"
                              id="task-${tarea.id}">
                       <label for="task-${tarea.id}">${tarea.titulo}</label>
+                      <button class="delete-task-btn" onclick="eliminarTarea(${tarea.id}, ${id})" type="button">🗑️</button>
                     </div>
                   `).join('')}
                 </div>
@@ -378,8 +377,31 @@ $equipos = Equipo::all();
       currentMantenimientoId = null;
     }
     
-    function editarDesdePreview() {
-      alert('Funcionalidad de edición en desarrollo');
+    async function eliminarTarea(tarea_id, mantenimiento_id) {
+      if (!confirm('¿Estás seguro de eliminar esta tarea?')) {
+        return;
+      }
+      
+      try {
+        const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/tareaEliminar', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `tarea_id=${tarea_id}`
+        });
+        
+        const data = await r.json();
+        
+        if (r.ok && data.ok) {
+          if (currentMantenimientoId) {
+            verDetalle(currentMantenimientoId);
+          }
+        } else {
+          alert('Error al eliminar la tarea: ' + (data.error || 'Error desconocido'));
+        }
+      } catch (error) {
+        alert('Error de conexión al eliminar la tarea');
+        console.error('Error:', error);
+      }
     }
     
     async function mover(id, estado) {
@@ -439,9 +461,5 @@ $equipos = Equipo::all();
     document.getElementById('modalPreview').addEventListener('click', function(e) {
       if (e.target === this) cerrarPreview();
     });
-    
-    const style = document.createElement('style');
-    style.textContent = `@keyframes spin{to{transform:rotate(360deg)}}`;
-    document.head.appendChild(style);
   </script>
 </section>

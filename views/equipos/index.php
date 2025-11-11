@@ -127,7 +127,6 @@
   color:var(--text-primary);
 }
 
-/* ⭐ SCROLL CONTAINER PARA LA TABLA ⭐ */
 .table-scroll-container{
   max-height: 600px;
   overflow-y: auto;
@@ -137,7 +136,6 @@
   position: relative;
 }
 
-/* Scrollbar personalizado */
 .table-scroll-container::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -161,7 +159,6 @@
   background: var(--bg-primary);
 }
 
-/* Indicador de scroll */
 .scroll-hint {
   position: sticky;
   bottom: 0;
@@ -183,7 +180,7 @@
 .equipos-table{
   width:100%;
   border-collapse:collapse;
-  min-width: 800px; /* Ancho mínimo para scroll horizontal */
+  min-width: 800px;
 }
 
 .equipos-table thead{
@@ -271,7 +268,6 @@
   box-shadow:0 4px 12px rgba(255,152,0,.4);
 }
 
-/* MODAL STYLES */
 .modal {
   display: none;
   position: fixed;
@@ -601,7 +597,6 @@
   <div class="table-section">
     <h3>📋 Listado de equipos (<?= count($equipos) ?>)</h3>
     
-    <!-- ⭐ CONTENEDOR CON SCROLL ⭐ -->
     <div class="table-scroll-container" id="tableScroll">
       <table class="equipos-table">
         <thead>
@@ -667,7 +662,6 @@
         </tbody>
       </table>
       
-      <!-- Indicador de scroll -->
       <div class="scroll-hint" id="scrollHint">
         ⬇️ Desliza para ver más equipos
       </div>
@@ -776,25 +770,22 @@
 <script>
 let currentEquipoData = null;
 
-// ⭐ DETECTAR SCROLL Y OCULTAR INDICADOR ⭐
+// Detectar scroll y ocultar indicador
 document.addEventListener('DOMContentLoaded', function() {
   const scrollContainer = document.getElementById('tableScroll');
   const scrollHint = document.getElementById('scrollHint');
   
   if (scrollContainer && scrollHint) {
-    // Ocultar indicador al hacer scroll
     scrollContainer.addEventListener('scroll', function() {
       if (this.scrollTop > 50) {
         scrollHint.classList.add('hidden');
       }
     });
     
-    // Ocultar automáticamente después de 3 segundos
     setTimeout(() => {
       scrollHint.classList.add('hidden');
     }, 3000);
     
-    // Si no hay suficiente contenido para scroll, ocultar indicador
     if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
       scrollHint.classList.add('hidden');
     }
@@ -849,4 +840,93 @@ function verDetalleEquipo(id, equipo) {
       </div>
       <div class="info-item">
         <div class="info-label">📅 Fecha Compra</div>
-        <div class="info-value">${equipo.fecha_compra ? new Date(equipo.fecha_compra).toLocaleDateString('es-PA') : 'No registrada'
+        <div class="info-value">${equipo.fecha_compra ? new Date(equipo.fecha_compra).toLocaleDateString('es-PA') : 'No registrada'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">🏪 Proveedor</div>
+        <div class="info-value">${equipo.proveedor || 'No especificado'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">${estadoEmoji} Estado</div>
+        <div class="info-value"><span class="status-badge ${estadoClass}">${estadoLabel}</span></div>
+      </div>
+    </div>
+    
+    ${equipo.costo ? `
+      <div class="cost-display">
+        💰 $${parseFloat(equipo.costo).toLocaleString('es-PA', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      </div>
+    ` : ''}
+    
+    <div class="preview-section" style="margin-bottom:0">
+      <h4>📊 Información Adicional</h4>
+      <p><strong>Creado:</strong> ${equipo.created_at ? new Date(equipo.created_at).toLocaleString('es-PA') : 'No disponible'}</p>
+      <p><strong>Última actualización:</strong> ${equipo.updated_at ? new Date(equipo.updated_at).toLocaleString('es-PA') : 'No disponible'}</p>
+    </div>
+  `;
+  
+  modal.classList.add('active');
+}
+
+function cerrarPreviewEquipo() {
+  document.getElementById('modalPreviewEquipo').classList.remove('active');
+  currentEquipoData = null;
+}
+
+function editarDesdePreview() {
+  if (currentEquipoData) {
+    editarEquipo(currentEquipoData.id, currentEquipoData);
+    cerrarPreviewEquipo();
+  }
+}
+
+function editarEquipo(id, equipo) {
+  // Cerrar modal de preview si está abierto
+  cerrarPreviewEquipo();
+  
+  // Llenar el formulario con los datos actuales
+  document.getElementById('edit_codigo').value = equipo.codigo || '';
+  document.getElementById('edit_nombre').value = equipo.nombre || '';
+  document.getElementById('edit_categoria').value = equipo.categoria || '';
+  document.getElementById('edit_marca').value = equipo.marca || '';
+  document.getElementById('edit_modelo').value = equipo.modelo || '';
+  document.getElementById('edit_nro_serie').value = equipo.nro_serie || '';
+  document.getElementById('edit_ubicacion').value = equipo.ubicacion || '';
+  document.getElementById('edit_fecha_compra').value = equipo.fecha_compra || '';
+  document.getElementById('edit_proveedor').value = equipo.proveedor || '';
+  document.getElementById('edit_costo').value = equipo.costo || '';
+  document.getElementById('edit_estado').value = equipo.estado || 'operativo';
+  
+  // Configurar el action del formulario
+  const form = document.getElementById('formEditar');
+  form.action = '<?= ENV_APP['BASE_URL'] ?>/equipos/update/' + id;
+  
+  // Mostrar el modal
+  document.getElementById('modalEditar').classList.add('active');
+}
+
+function cerrarModalEditar() {
+  document.getElementById('modalEditar').classList.remove('active');
+}
+
+// Cerrar modales con ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    cerrarPreviewEquipo();
+    cerrarModalEditar();
+  }
+});
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalPreviewEquipo').addEventListener('click', function(e) {
+  if (e.target === this) {
+    cerrarPreviewEquipo();
+  }
+});
+
+document.getElementById('modalEditar').addEventListener('click', function(e) {
+  if (e.target === this) {
+    cerrarModalEditar();
+  }
+});
+</script>

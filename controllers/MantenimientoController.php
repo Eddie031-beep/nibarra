@@ -166,3 +166,10 @@ class MantenimientoController {
     redirect('/mantenimiento');
   }
 }
+
+function editarDesdePreview() {
+  if (currentEquipoData) {
+    editarEquipo(currentEquipoData.id, currentEquipoData);
+    cerrarPreviewEquipo();
+  }
+}
