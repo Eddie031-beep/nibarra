@@ -97,6 +97,7 @@ document.addEventListener('keydown', e => {
     <a href="<?= $base ?>/equipos" class="<?= $is('/equipos')?'active':'' ?>">Equipos</a>
     <a href="<?= $base ?>/calendario" class="<?= $is('/calendario')?'active':'' ?>">Calendario</a>
     <a href="<?= $base ?>/mantenimiento" class="<?= $is('/mantenimiento')?'active':'' ?>">Mantenimiento</a>
+    <a href="<?= $base ?>/facturas" class="<?= $is('/facturas')?'active':'' ?>">Facturas</a>
     <?php if($u): ?>
       <a href="<?= $base ?>/logout">Salir</a>
     <?php else: ?>

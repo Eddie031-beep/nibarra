@@ -67,9 +67,18 @@ class Mantenimiento {
     
     log_audit('mantenimientos', $id, 'update', ['progreso' => $progreso]);
     
-    // Si llega a 100%, mover automáticamente a completado
+    // Si llega a 100%, mover automáticamente a completado y generar factura
     if($progreso >= 100){
       self::mover($id, 'completado');
+      
+      // Generar factura automáticamente
+      try {
+        require_once BASE_PATH.'/models/Factura.php';
+        Factura::crearDesdeMantenimiento($id);
+      } catch (Exception $e) {
+        // Si ya existe factura o hay error, continuar sin romper el flujo
+        error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
+      }
     }
     
     return true;

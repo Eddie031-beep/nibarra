@@ -128,6 +128,40 @@ try {
       return; 
     }
 
+    // ============================================
+    // RUTAS DE FACTURAS
+    // ============================================
+
+    if ($method==='GET' && $route==='/facturas') { 
+      (new FacturaController)->index(); 
+      return; 
+    }
+
+    if ($method==='GET' && preg_match('#^/facturas/ver/(\d+)$#',$route,$m)) { 
+      (new FacturaController)->ver((int)$m[1]); 
+      return; 
+    }
+
+    if ($method==='GET' && preg_match('#^/facturas/pdf/(\d+)$#',$route,$m)) { 
+      (new FacturaController)->descargarPDF((int)$m[1]); 
+      return; 
+    }
+
+    if ($method==='POST' && $route==='/facturas/generar') { 
+      (new FacturaController)->generar(); 
+      return; 
+    }
+
+    if ($method==='POST' && $route==='/facturas/actualizar-estado') { 
+      (new FacturaController)->actualizarEstado(); 
+      return; 
+    }
+
+    if ($method==='POST' && preg_match('#^/facturas/delete/(\d+)$#',$route,$m)) { 
+      (new FacturaController)->destroy((int)$m[1]); 
+      return; 
+    }
+
     // MANTENIMIENTO
     if ($method==='POST' && $route==='/mantenimiento/store') { 
       (new MantenimientoController)->store(); 
