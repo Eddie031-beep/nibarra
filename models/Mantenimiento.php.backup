@@ -92,32 +92,4 @@ class Mantenimiento {
     
     return $tarea_id;
   }
-  
-  /**
-   * Crear nuevo mantenimiento
-   * @param array $d Datos del mantenimiento
-   * @return int ID del mantenimiento creado
-   */
-  public static function create($d){
-    $sql = "INSERT INTO mantenimientos(equipo_id, titulo, descripcion, tipo, prioridad, fecha_programada, 
-            costo_estimado, estado, creado_por) 
-            VALUES(:equipo_id, :titulo, :descripcion, :tipo, :prioridad, :fecha_programada, 
-            :costo_estimado, :estado, :creado_por)";
-    
-    DB::pdo()->prepare($sql)->execute($d);
-    $id = DB::pdo()->lastInsertId();
-    
-    log_audit('mantenimientos', $id, 'insert', $d);
-    
-    return $id;
-  }
-  
-  /**
-   * Eliminar mantenimiento
-   * @param int $id ID del mantenimiento
-   */
-  public static function delete($id){
-    DB::pdo()->prepare("DELETE FROM mantenimientos WHERE id=?")->execute([$id]);
-    log_audit('mantenimientos', $id, 'delete', null);
-  }
 }
