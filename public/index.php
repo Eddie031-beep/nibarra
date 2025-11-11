@@ -38,14 +38,35 @@ try {
   $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
   function dispatch(string $method, string $route) {
-    // GET
-    if ($method==='GET' && $route==='/health/replica') { (new HealthController)->replica(); return; }
-    if ($method==='GET' && ($route==='/' || $route==='/equipos')) { (new EquiposController)->index(); return; }
-    if ($method==='GET' && $route==='/dashboard') { (new DashboardController)->index(); return; }
-    if ($method==='GET' && $route==='/calendario') { (new CalendarioController)->index(); return; }
-    if ($method==='GET' && $route==='/mantenimiento') { (new MantenimientoController)->index(); return; }
+    // ============================================
+    // RUTAS GET
+    // ============================================
     
-    // NUEVO: Endpoint para obtener detalles de mantenimiento
+    if ($method==='GET' && $route==='/health/replica') { 
+      (new HealthController)->replica(); 
+      return; 
+    }
+    
+    if ($method==='GET' && ($route==='/' || $route==='/equipos')) { 
+      (new EquiposController)->index(); 
+      return; 
+    }
+    
+    if ($method==='GET' && $route==='/dashboard') { 
+      (new DashboardController)->index(); 
+      return; 
+    }
+    
+    if ($method==='GET' && $route==='/calendario') { 
+      (new CalendarioController)->index(); 
+      return; 
+    }
+    
+    if ($method==='GET' && $route==='/mantenimiento') { 
+      (new MantenimientoController)->index(); 
+      return; 
+    }
+    
     if ($method==='GET' && preg_match('#^/mantenimiento/obtener/(\d+)$#',$route,$m)) { 
       (new MantenimientoController)->obtener((int)$m[1]); 
       return; 
@@ -61,37 +82,129 @@ try {
       return; 
     }
     
-    if ($method==='GET' && $route==='/login') { (new AuthController)->loginView(); return; }
-    if ($method==='GET' && $route==='/register') { (new AuthController)->registerView(); return; }
-    if ($method==='GET' && $route==='/logout') { (new AuthController)->logout(); return; }
-
-    // POST
-    if ($method==='POST' && $route==='/login') { (new AuthController)->login(); return; }
-    if ($method==='POST' && $route==='/register') { (new AuthController)->register(); return; }
-    if ($method==='POST' && $route==='/equipos/store') { (new EquiposController)->store(); return; }
-    if ($method==='POST' && preg_match('#^/equipos/delete/(\d+)$#',$route,$m)) { (new EquiposController)->destroy((int)$m[1]); return; }
-    if ($method==='POST' && preg_match('#^/equipos/update/(\d+)$#',$route,$m)) { (new EquiposController)->update((int)$m[1]); return; }
-
-    if ($method==='POST' && $route==='/mantenimiento/store') { (new MantenimientoController)->store(); return; }
-    if ($method==='POST' && $route==='/mantenimiento/mover') { (new MantenimientoController)->mover(); return; }
-    if ($method==='POST' && $route==='/mantenimiento/tareaToggle') { (new MantenimientoController)->tareaToggle(); return; }
-    if ($method==='POST' && $route==='/mantenimiento/tareaNueva') { (new MantenimientoController)->tareaNueva(); return; }
-    if ($method==='POST' && $route==='/mantenimiento/tareaEliminar') { (new MantenimientoController)->tareaEliminar(); return; }
-    if ($method==='POST' && preg_match('#^/mantenimiento/delete/(\d+)$#',$route,$m)) { (new MantenimientoController)->destroy((int)$m[1]); return; }
-
-    if ($method==='POST' && $route==='/calendario/store') { (new CalendarioController)->store(); return; }
-    if ($method==='POST' && preg_match('#^/calendario/delete/(\d+)$#',$route,$m)) { (new CalendarioController)->destroy((int)$m[1]); return; }
-
-    if ($method==='POST' && $route==='/chatbot/query') { (new ChatbotController)->query(); return; }
-
-    if (class_exists('UsuariosController')) {
-      if ($method==='POST' && preg_match('#^/usuarios/update/(\d+)$#',$route,$m)) { (new UsuariosController)->update((int)$m[1]); return; }
-      if ($method==='POST' && preg_match('#^/usuarios/delete/(\d+)$#',$route,$m)) { (new UsuariosController)->destroy((int)$m[1]); return; }
+    if ($method==='GET' && $route==='/login') { 
+      (new AuthController)->loginView(); 
+      return; 
+    }
+    
+    if ($method==='GET' && $route==='/register') { 
+      (new AuthController)->registerView(); 
+      return; 
+    }
+    
+    if ($method==='GET' && $route==='/logout') { 
+      (new AuthController)->logout(); 
+      return; 
     }
 
+    // ============================================
+    // RUTAS POST
+    // ============================================
+    
+    // AUTH
+    if ($method==='POST' && $route==='/login') { 
+      (new AuthController)->login(); 
+      return; 
+    }
+    
+    if ($method==='POST' && $route==='/register') { 
+      (new AuthController)->register(); 
+      return; 
+    }
+    
+    // EQUIPOS
+    if ($method==='POST' && $route==='/equipos/store') { 
+      (new EquiposController)->store(); 
+      return; 
+    }
+    
+    if ($method==='POST' && preg_match('#^/equipos/delete/(\d+)$#',$route,$m)) { 
+      (new EquiposController)->destroy((int)$m[1]); 
+      return; 
+    }
+    
+    if ($method==='POST' && preg_match('#^/equipos/update/(\d+)$#',$route,$m)) { 
+      (new EquiposController)->update((int)$m[1]); 
+      return; 
+    }
+
+    // MANTENIMIENTO
+    if ($method==='POST' && $route==='/mantenimiento/store') { 
+      (new MantenimientoController)->store(); 
+      return; 
+    }
+    
+    if ($method==='POST' && $route==='/mantenimiento/mover') { 
+      (new MantenimientoController)->mover(); 
+      return; 
+    }
+    
+    if ($method==='POST' && $route==='/mantenimiento/tareaToggle') { 
+      (new MantenimientoController)->tareaToggle(); 
+      return; 
+    }
+    
+    if ($method==='POST' && $route==='/mantenimiento/tareaNueva') { 
+      (new MantenimientoController)->tareaNueva(); 
+      return; 
+    }
+    
+    if ($method==='POST' && $route==='/mantenimiento/tareaEliminar') { 
+      (new MantenimientoController)->tareaEliminar(); 
+      return; 
+    }
+    
+    if ($method==='POST' && preg_match('#^/mantenimiento/delete/(\d+)$#',$route,$m)) { 
+      (new MantenimientoController)->destroy((int)$m[1]); 
+      return; 
+    }
+
+    // CALENDARIO ⭐⭐⭐ RUTAS CRÍTICAS PARA EDICIÓN ⭐⭐⭐
+    if ($method==='POST' && $route==='/calendario/store') { 
+      (new CalendarioController)->store(); 
+      return; 
+    }
+    
+    if ($method==='POST' && preg_match('#^/calendario/update/(\d+)$#',$route,$m)) { 
+      (new CalendarioController)->update((int)$m[1]); 
+      return; 
+    }
+    
+    if ($method==='POST' && preg_match('#^/calendario/delete/(\d+)$#',$route,$m)) { 
+      (new CalendarioController)->destroy((int)$m[1]); 
+      return; 
+    }
+
+    // CHATBOT
+    if ($method==='POST' && $route==='/chatbot/query') { 
+      (new ChatbotController)->query(); 
+      return; 
+    }
+
+    // USUARIOS
+    if (class_exists('UsuariosController')) {
+      if ($method==='POST' && preg_match('#^/usuarios/update/(\d+)$#',$route,$m)) { 
+        (new UsuariosController)->update((int)$m[1]); 
+        return; 
+      }
+      
+      if ($method==='POST' && preg_match('#^/usuarios/delete/(\d+)$#',$route,$m)) { 
+        (new UsuariosController)->destroy((int)$m[1]); 
+        return; 
+      }
+    }
+
+    // ============================================
+    // 404 - RUTA NO ENCONTRADA
+    // ============================================
     http_response_code(404);
     include dirname(__DIR__).'/views/layouts/header.php';
-    echo '<section class="card" style="padding:16px"><h2>404</h2><p>Ruta no encontrada: <code>'.htmlspecialchars($route, ENT_QUOTES, 'UTF-8').'</code></p></section>';
+    echo '<section class="card" style="padding:16px">';
+    echo '<h2>404 - Ruta no encontrada</h2>';
+    echo '<p>La ruta <code>'.htmlspecialchars($route, ENT_QUOTES, 'UTF-8').'</code> no existe.</p>';
+    echo '<p><strong>Método:</strong> '.$method.'</p>';
+    echo '<p><a href="'.ENV_APP['BASE_URL'].'/equipos">← Volver a Equipos</a></p>';
+    echo '</section>';
     include dirname(__DIR__).'/views/layouts/footer.php';
   }
 

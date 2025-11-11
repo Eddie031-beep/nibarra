@@ -566,7 +566,7 @@
         </div>
         
         <div class="form-group">
-          <label>Fecha de Compra</label>
+          <label>Fecha de Entrega</label>
           <input type="date" name="fecha_compra">
         </div>
         
@@ -734,7 +734,7 @@
           </div>
           
           <div class="form-group">
-            <label>Fecha de Compra</label>
+            <label>Fecha de Entrega</label>
             <input type="date" name="fecha_compra" id="edit_fecha_compra">
           </div>
           

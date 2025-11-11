@@ -33,6 +33,27 @@ class CalendarioController {
     redirect('/calendario?y='.urlencode(post('y')).'&m='.urlencode(post('m')));
   }
   
+  public function update($id){
+    Auth::requireLogin();
+    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    
+    $all_day = post('all_day') ? 1 : 0;
+    $inicio  = post('inicio'); 
+    $fin = post('fin')?:null;
+    
+    $d = [
+      'titulo'=>post('titulo'),
+      'inicio'=>$inicio,
+      'fin'=>$all_day ? null : $fin,
+      'all_day'=>$all_day,
+      'color'=>post('color')?:null,
+      'mantenimiento_id'=>post('mantenimiento_id')?:null
+    ];
+    
+    CalendarioEvento::update($id, $d);
+    redirect('/calendario?y='.urlencode(post('y')).'&m='.urlencode(post('m')));
+  }
+  
   public function destroy($id){ 
     Auth::requireLogin(); 
     Permisos::requireEliminar(); // ✅ Solo admin
