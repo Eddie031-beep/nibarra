@@ -60,6 +60,31 @@ class MantenimientoController {
     redirect('/mantenimiento');
   }
   
+  public function obtener($id) {
+  Auth::requireLogin();
+  
+  $sql = "SELECT m.*, e.nombre AS equipo_nombre
+          FROM mantenimientos m
+          JOIN equipos e ON e.id = m.equipo_id
+          WHERE m.id = ?";
+  
+  $mant = DB::pdo()->prepare($sql)->execute([$id])->fetch();
+  
+  if (!$mant) {
+    http_response_code(404);
+    Response::json(['error' => 'No encontrado']);
+    return;
+  }
+  
+  // Obtener tareas
+  $tareas = DB::pdo()->prepare(
+    "SELECT * FROM mantenimiento_tareas WHERE mantenimiento_id = ? ORDER BY orden"
+  )->execute([$id])->fetchAll();
+  
+  $mant['tareas'] = $tareas;
+  
+  Response::json($mant);
+}
   public function mover(){ 
     Auth::requireLogin();
     Permisos::requireEditar(); // ✅ Solo admin y técnico
