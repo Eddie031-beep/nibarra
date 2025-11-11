@@ -11,7 +11,7 @@ class MantenimientoController {
   
   public function store(){
     Auth::requireLogin();
-    Permisos::requireCrear(); // ✅ Solo admin y técnico
+    Permisos::requireCrear();
     
     $equipo_id = (int)post('equipo_id');
     $titulo = post('titulo');
@@ -35,7 +35,6 @@ class MantenimientoController {
     
     $mantenimiento_id = Mantenimiento::create($d);
     
-    // Crear evento en calendario automáticamente
     if ($mantenimiento_id && $fecha_programada) {
       require_once BASE_PATH.'/models/CalendarioEvento.php';
       
@@ -60,34 +59,56 @@ class MantenimientoController {
     redirect('/mantenimiento');
   }
   
+  // ⭐ NUEVO MÉTODO - Este es el que agregamos
   public function obtener($id) {
-  Auth::requireLogin();
-  
-  $sql = "SELECT m.*, e.nombre AS equipo_nombre
-          FROM mantenimientos m
-          JOIN equipos e ON e.id = m.equipo_id
-          WHERE m.id = ?";
-  
-  $mant = DB::pdo()->prepare($sql)->execute([$id])->fetch();
-  
-  if (!$mant) {
-    http_response_code(404);
-    Response::json(['error' => 'No encontrado']);
-    return;
+    Auth::requireLogin();
+    
+    try {
+      $pdo = DB::pdo();
+      
+      $sql = "SELECT m.*, e.nombre AS equipo_nombre, e.codigo AS equipo_codigo
+              FROM mantenimientos m
+              JOIN equipos e ON e.id = m.equipo_id
+              WHERE m.id = ?";
+      
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute([$id]);
+      $mant = $stmt->fetch();
+      
+      if (!$mant) {
+        http_response_code(404);
+        Response::json(['error' => 'Mantenimiento no encontrado']);
+        return;
+      }
+      
+      $sql_tareas = "SELECT * FROM mantenimiento_tareas 
+                     WHERE mantenimiento_id = ? 
+                     ORDER BY orden, id";
+      
+      $stmt_tareas = $pdo->prepare($sql_tareas);
+      $stmt_tareas->execute([$id]);
+      $tareas = $stmt_tareas->fetchAll();
+      
+      $mant['tareas'] = $tareas;
+      
+      $total_tareas = count($tareas);
+      $tareas_completadas = count(array_filter($tareas, fn($t) => $t['hecho'] == 1));
+      $mant['total_tareas'] = $total_tareas;
+      $mant['hechas_tareas'] = $tareas_completadas;
+      $mant['progreso'] = $total_tareas > 0 ? round(($tareas_completadas / $total_tareas) * 100) : 0;
+      
+      Response::json($mant);
+      
+    } catch (Throwable $e) {
+      error_log("Error en obtener mantenimiento: " . $e->getMessage());
+      http_response_code(500);
+      Response::json(['error' => 'Error al obtener datos: ' . $e->getMessage()]);
+    }
   }
   
-  // Obtener tareas
-  $tareas = DB::pdo()->prepare(
-    "SELECT * FROM mantenimiento_tareas WHERE mantenimiento_id = ? ORDER BY orden"
-  )->execute([$id])->fetchAll();
-  
-  $mant['tareas'] = $tareas;
-  
-  Response::json($mant);
-}
   public function mover(){ 
     Auth::requireLogin();
-    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    Permisos::requireEditar();
     
     Mantenimiento::mover((int)post('id'), post('estado')); 
     Response::json(['ok'=>true]); 
@@ -95,7 +116,7 @@ class MantenimientoController {
   
   public function tareaToggle(){ 
     Auth::requireLogin();
-    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    Permisos::requireEditar();
     
     $mid = Mantenimiento::toggleTarea((int)post('tarea_id'), (int)post('hecho')); 
     Response::json(['ok'=>true,'mantenimiento_id'=>$mid]); 
@@ -103,15 +124,43 @@ class MantenimientoController {
   
   public function tareaNueva(){ 
     Auth::requireLogin();
-    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    Permisos::requireEditar();
     
     Mantenimiento::crearTarea((int)post('mantenimiento_id'), post('titulo')); 
     Response::json(['ok'=>true]); 
   }
   
+  // ⭐ NUEVO MÉTODO - Eliminar tarea
+  public function tareaEliminar(){
+    Auth::requireLogin();
+    Permisos::requireEditar(); // Admin y Técnico pueden eliminar tareas
+    
+    $tarea_id = (int)post('tarea_id');
+    
+    try {
+      $pdo = DB::pdo();
+      
+      // Obtener el mantenimiento_id antes de eliminar
+      $stmt = $pdo->prepare("SELECT mantenimiento_id FROM mantenimiento_tareas WHERE id = ?");
+      $stmt->execute([$tarea_id]);
+      $mantenimiento_id = $stmt->fetchColumn();
+      
+      // Eliminar la tarea
+      $stmt = $pdo->prepare("DELETE FROM mantenimiento_tareas WHERE id = ?");
+      $stmt->execute([$tarea_id]);
+      
+      log_audit('mantenimiento_tareas', $tarea_id, 'delete', ['mantenimiento_id' => $mantenimiento_id]);
+      
+      Response::json(['ok'=>true, 'mantenimiento_id'=>$mantenimiento_id]);
+    } catch (Throwable $e) {
+      error_log("Error al eliminar tarea: " . $e->getMessage());
+      Response::json(['ok'=>false, 'error'=>$e->getMessage()], 500);
+    }
+  }
+  
   public function destroy($id){
     Auth::requireLogin();
-    Permisos::requireEliminar(); // ✅ Solo admin
+    Permisos::requireEliminar();
     
     Mantenimiento::delete($id);
     redirect('/mantenimiento');

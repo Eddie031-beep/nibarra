@@ -120,7 +120,6 @@
 
 .table-section{
   padding:1.5rem;
-  overflow-x:auto;
 }
 
 .table-section h3{
@@ -128,13 +127,70 @@
   color:var(--text-primary);
 }
 
+/* ⭐ SCROLL CONTAINER PARA LA TABLA ⭐ */
+.table-scroll-container{
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  position: relative;
+}
+
+/* Scrollbar personalizado */
+.table-scroll-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 5px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 5px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+.table-scroll-container::-webkit-scrollbar-corner {
+  background: var(--bg-primary);
+}
+
+/* Indicador de scroll */
+.scroll-hint {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(11, 18, 32, 0.95), transparent);
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.scroll-hint.hidden {
+  display: none;
+}
+
 .equipos-table{
   width:100%;
   border-collapse:collapse;
+  min-width: 800px; /* Ancho mínimo para scroll horizontal */
 }
 
 .equipos-table thead{
   background:var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .equipos-table th{
@@ -145,6 +201,7 @@
   border-bottom:2px solid var(--border-color);
   font-size:0.875rem;
   white-space:nowrap;
+  background: var(--bg-secondary);
 }
 
 .equipos-table td{
@@ -155,10 +212,12 @@
 
 .equipos-table tbody tr{
   transition:all .2s;
+  cursor:pointer;
 }
 
 .equipos-table tbody tr:hover{
   background:var(--bg-secondary);
+  transform:translateX(4px);
 }
 
 .status-badge{
@@ -212,6 +271,7 @@
   box-shadow:0 4px 12px rgba(255,152,0,.4);
 }
 
+/* MODAL STYLES */
 .modal {
   display: none;
   position: fixed;
@@ -219,7 +279,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   z-index: 10000;
   align-items: center;
   justify-content: center;
@@ -234,11 +294,11 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 0;
   max-width: 800px;
   width: 90%;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.3s ease;
 }
@@ -259,6 +319,151 @@
   }
 }
 
+@keyframes bounceArrow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 1rem 1rem 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: 0;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: calc(90vh - 180px);
+  overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.info-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.preview-section {
+  margin-bottom: 20px;
+}
+
+.preview-section h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-section p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cost-display {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-green);
+  text-align: center;
+  padding: 20px;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.scroll-indicator {
+  text-align: center;
+  padding: 8px;
+  color: #64748b;
+  font-size: 11px;
+  animation: bounceArrow 2s infinite;
+}
+
 @media(max-width:768px){
   .form-grid{
     grid-template-columns:1fr;
@@ -266,6 +471,19 @@
   
   .stats-grid{
     grid-template-columns:repeat(2, 1fr);
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .table-scroll-container {
+    max-height: 400px;
   }
 }
 </style>
@@ -381,201 +599,254 @@
   </form>
   
   <div class="table-section">
-    <h3>📋 Listado de equipos</h3>
+    <h3>📋 Listado de equipos (<?= count($equipos) ?>)</h3>
     
-    <table class="equipos-table">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Nombre</th>
-          <th>Categoría</th>
-          <th>Marca</th>
-          <th>Modelo</th>
-          <th>Serie</th>
-          <th>Ubicación</th>
-          <th>Compra</th>
-          <th>Costo</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if(empty($equipos)): ?>
+    <!-- ⭐ CONTENEDOR CON SCROLL ⭐ -->
+    <div class="table-scroll-container" id="tableScroll">
+      <table class="equipos-table">
+        <thead>
           <tr>
-            <td colspan="11" style="text-align:center;padding:2rem;color:var(--text-secondary)">
-              No hay equipos registrados aún
-            </td>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Marca/Modelo</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+            <th>Costo</th>
+            <th>Acciones</th>
           </tr>
-        <?php else: ?>
-          <?php foreach($equipos as $e): ?>
+        </thead>
+        <tbody>
+          <?php if(empty($equipos)): ?>
             <tr>
-              <td><strong><?= safe($e['codigo']) ?></strong></td>
-              <td><?= safe($e['nombre']) ?></td>
-              <td><?= safe($e['categoria']) ?></td>
-              <td><?= safe($e['marca']) ?></td>
-              <td><?= safe($e['modelo']) ?></td>
-              <td><?= safe($e['nro_serie']) ?></td>
-              <td><?= safe($e['ubicacion']) ?></td>
-              <td><?= safe($e['fecha_compra']) ?></td>
-              <td><?= $e['costo']!==null ? '$'.number_format($e['costo'],2) : '-' ?></td>
-              <td>
-                <span class="status-badge status-<?= safe($e['estado']) ?>">
-                  <?= ucfirst(str_replace('_', ' ', safe($e['estado']))) ?>
-                </span>
-              </td>
-              <td>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-                  <?php 
-                    $user = Auth::user();
-                    $canEdit = $user && in_array($user['rol'], ['admin', 'tecnico']);
-                    $canDelete = $user && $user['rol'] === 'admin';
-                  ?>
-                  
-                  <?php if($canEdit): ?>
-                    <button class="action-btn edit" onclick="editarEquipo(<?= (int)$e['id'] ?>, <?= htmlspecialchars(json_encode($e), ENT_QUOTES) ?>)">
-                      ✏️ Editar
-                    </button>
-                  <?php endif; ?>
-                  
-                  <?php if($canDelete): ?>
-                    <form method="post" 
-                          action="<?= ENV_APP['BASE_URL'] ?>/equipos/delete/<?= (int)$e['id'] ?>" 
-                          onsubmit="return confirm('¿Está seguro de eliminar este equipo?')"
-                          style="display:inline">
-                      <button type="submit" class="action-btn">🗑️ Eliminar</button>
-                    </form>
-                  <?php endif; ?>
-                  
-                  <?php if(!$canEdit && !$canDelete): ?>
-                    <span style="color:var(--text-muted);font-size:0.875rem">Sin permisos</span>
-                  <?php endif; ?>
-                </div>
+              <td colspan="8" style="text-align:center;padding:2rem;color:var(--text-secondary)">
+                No hay equipos registrados aún
               </td>
             </tr>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </tbody>
-    </table>
+          <?php else: ?>
+            <?php foreach($equipos as $e): ?>
+              <tr onclick="verDetalleEquipo(<?= (int)$e['id'] ?>, <?= htmlspecialchars(json_encode($e), ENT_QUOTES) ?>)">
+                <td><strong><?= safe($e['codigo']) ?></strong></td>
+                <td><?= safe($e['nombre']) ?></td>
+                <td><?= safe($e['categoria']) ?></td>
+                <td><?= safe($e['marca']) ?> <?= safe($e['modelo']) ?></td>
+                <td><?= safe($e['ubicacion']) ?></td>
+                <td>
+                  <span class="status-badge status-<?= safe($e['estado']) ?>">
+                    <?= ucfirst(str_replace('_', ' ', safe($e['estado']))) ?>
+                  </span>
+                </td>
+                <td><?= $e['costo']!==null ? '$'.number_format($e['costo'],2) : '-' ?></td>
+                <td onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                    <?php 
+                      $user = Auth::user();
+                      $canEdit = $user && in_array($user['rol'], ['admin', 'tecnico']);
+                      $canDelete = $user && $user['rol'] === 'admin';
+                    ?>
+                    
+                    <?php if($canEdit): ?>
+                      <button class="action-btn edit" onclick="editarEquipo(<?= (int)$e['id'] ?>, <?= htmlspecialchars(json_encode($e), ENT_QUOTES) ?>)">
+                        ✏️ Editar
+                      </button>
+                    <?php endif; ?>
+                    
+                    <?php if($canDelete): ?>
+                      <form method="post" 
+                            action="<?= ENV_APP['BASE_URL'] ?>/equipos/delete/<?= (int)$e['id'] ?>" 
+                            onsubmit="return confirm('¿Está seguro de eliminar este equipo?')"
+                            style="display:inline">
+                        <button type="submit" class="action-btn">🗑️</button>
+                      </form>
+                    <?php endif; ?>
+                  </div>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+      </table>
+      
+      <!-- Indicador de scroll -->
+      <div class="scroll-hint" id="scrollHint">
+        ⬇️ Desliza para ver más equipos
+      </div>
+    </div>
   </div>
 </section>
+
+<!-- Modal Vista Previa Equipo -->
+<div class="modal" id="modalPreviewEquipo">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="previewEquipoTitle">Detalles del Equipo</h3>
+      <button class="modal-close" onclick="cerrarPreviewEquipo()">✕</button>
+    </div>
+    <div class="modal-body" id="previewEquipoBody">
+      <div class="scroll-indicator">⬇️ Desliza para ver más información</div>
+      <div id="previewEquipoContent"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn edit" onclick="editarDesdePreview()">✏️ Editar</button>
+      <button class="submit-btn" onclick="cerrarPreviewEquipo()">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal de Edición -->
 <div class="modal" id="modalEditar">
   <div class="modal-content">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <h3 style="margin:0;color:var(--text-primary)">✏️ Editar Equipo</h3>
-      <button onclick="cerrarModalEditar()" style="background:none;border:none;color:var(--text-secondary);font-size:1.5rem;cursor:pointer;padding:0.5rem">✕</button>
+    <div class="modal-header">
+      <h3>✏️ Editar Equipo</h3>
+      <button class="modal-close" onclick="cerrarModalEditar()">✕</button>
     </div>
     
-    <form method="post" id="formEditar">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Código *</label>
-          <input name="codigo" id="edit_codigo" required>
+    <div class="modal-body">
+      <form method="post" id="formEditar">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Código *</label>
+            <input name="codigo" id="edit_codigo" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input name="nombre" id="edit_nombre" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Categoría</label>
+            <input name="categoria" id="edit_categoria">
+          </div>
+          
+          <div class="form-group">
+            <label>Marca</label>
+            <input name="marca" id="edit_marca">
+          </div>
+          
+          <div class="form-group">
+            <label>Modelo</label>
+            <input name="modelo" id="edit_modelo">
+          </div>
+          
+          <div class="form-group">
+            <label>Nro. Serie</label>
+            <input name="nro_serie" id="edit_nro_serie">
+          </div>
+          
+          <div class="form-group">
+            <label>Ubicación</label>
+            <input name="ubicacion" id="edit_ubicacion">
+          </div>
+          
+          <div class="form-group">
+            <label>Fecha de Compra</label>
+            <input type="date" name="fecha_compra" id="edit_fecha_compra">
+          </div>
+          
+          <div class="form-group">
+            <label>Proveedor</label>
+            <input name="proveedor" id="edit_proveedor">
+          </div>
+          
+          <div class="form-group">
+            <label>Costo ($)</label>
+            <input type="number" step="0.01" name="costo" id="edit_costo">
+          </div>
+          
+          <div class="form-group">
+            <label>Estado *</label>
+            <select name="estado" id="edit_estado" required>
+              <option value="operativo">Operativo</option>
+              <option value="fuera_de_servicio">Fuera de servicio</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
         </div>
-        
-        <div class="form-group">
-          <label>Nombre *</label>
-          <input name="nombre" id="edit_nombre" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Categoría</label>
-          <input name="categoria" id="edit_categoria">
-        </div>
-        
-        <div class="form-group">
-          <label>Marca</label>
-          <input name="marca" id="edit_marca">
-        </div>
-        
-        <div class="form-group">
-          <label>Modelo</label>
-          <input name="modelo" id="edit_modelo">
-        </div>
-        
-        <div class="form-group">
-          <label>Nro. Serie</label>
-          <input name="nro_serie" id="edit_nro_serie">
-        </div>
-        
-        <div class="form-group">
-          <label>Ubicación</label>
-          <input name="ubicacion" id="edit_ubicacion">
-        </div>
-        
-        <div class="form-group">
-          <label>Fecha de Compra</label>
-          <input type="date" name="fecha_compra" id="edit_fecha_compra">
-        </div>
-        
-        <div class="form-group">
-          <label>Proveedor</label>
-          <input name="proveedor" id="edit_proveedor">
-        </div>
-        
-        <div class="form-group">
-          <label>Costo ($)</label>
-          <input type="number" step="0.01" name="costo" id="edit_costo">
-        </div>
-        
-        <div class="form-group">
-          <label>Estado *</label>
-          <select name="estado" id="edit_estado" required>
-            <option value="operativo">Operativo</option>
-            <option value="fuera_de_servicio">Fuera de servicio</option>
-            <option value="baja">Baja</option>
-          </select>
-        </div>
-      </div>
-      
-      <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
-        <button type="submit" class="submit-btn" style="flex:1">💾 Guardar cambios</button>
-        <button type="button" onclick="cerrarModalEditar()" style="flex:1;padding:0.75rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:0.5rem;color:var(--text-primary);cursor:pointer;font-weight:600">
-          Cancelar
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="submit" form="formEditar" class="submit-btn">💾 Guardar cambios</button>
+      <button type="button" class="action-btn" onclick="cerrarModalEditar()">Cancelar</button>
+    </div>
   </div>
 </div>
 
 <script>
-function editarEquipo(id, equipo) {
-  // Llenar el formulario con los datos del equipo
-  document.getElementById('edit_codigo').value = equipo.codigo || '';
-  document.getElementById('edit_nombre').value = equipo.nombre || '';
-  document.getElementById('edit_categoria').value = equipo.categoria || '';
-  document.getElementById('edit_marca').value = equipo.marca || '';
-  document.getElementById('edit_modelo').value = equipo.modelo || '';
-  document.getElementById('edit_nro_serie').value = equipo.nro_serie || '';
-  document.getElementById('edit_ubicacion').value = equipo.ubicacion || '';
-  document.getElementById('edit_fecha_compra').value = equipo.fecha_compra || '';
-  document.getElementById('edit_proveedor').value = equipo.proveedor || '';
-  document.getElementById('edit_costo').value = equipo.costo || '';
-  document.getElementById('edit_estado').value = equipo.estado || 'operativo';
-  
-  // Cambiar la acción del formulario
-  document.getElementById('formEditar').action = '<?= ENV_APP['BASE_URL'] ?>/equipos/update/' + id;
-  
-  // Mostrar modal
-  document.getElementById('modalEditar').classList.add('active');
-}
+let currentEquipoData = null;
 
-function cerrarModalEditar() {
-  document.getElementById('modalEditar').classList.remove('active');
-}
-
-// Cerrar modal al hacer clic fuera
-document.getElementById('modalEditar')?.addEventListener('click', function(e) {
-  if (e.target === this) {
-    cerrarModalEditar();
+// ⭐ DETECTAR SCROLL Y OCULTAR INDICADOR ⭐
+document.addEventListener('DOMContentLoaded', function() {
+  const scrollContainer = document.getElementById('tableScroll');
+  const scrollHint = document.getElementById('scrollHint');
+  
+  if (scrollContainer && scrollHint) {
+    // Ocultar indicador al hacer scroll
+    scrollContainer.addEventListener('scroll', function() {
+      if (this.scrollTop > 50) {
+        scrollHint.classList.add('hidden');
+      }
+    });
+    
+    // Ocultar automáticamente después de 3 segundos
+    setTimeout(() => {
+      scrollHint.classList.add('hidden');
+    }, 3000);
+    
+    // Si no hay suficiente contenido para scroll, ocultar indicador
+    if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+      scrollHint.classList.add('hidden');
+    }
   }
 });
 
-// ESC para cerrar
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    cerrarModalEditar();
-  }
-});
-</script>
+function verDetalleEquipo(id, equipo) {
+  currentEquipoData = equipo;
+  const modal = document.getElementById('modalPreviewEquipo');
+  const content = document.getElementById('previewEquipoContent');
+  
+  document.getElementById('previewEquipoTitle').textContent = `${equipo.codigo} - ${equipo.nombre}`;
+  
+  const estadoEmoji = {
+    'operativo': '✅',
+    'fuera_de_servicio': '⚠️',
+    'baja': '❌'
+  }[equipo.estado] || '❓';
+  
+  const estadoClass = `status-${equipo.estado}`;
+  const estadoLabel = equipo.estado.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  
+  content.innerHTML = `
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">🔧 Equipo</div>
+        <div class="info-value">${equipo.nombre || 'N/A'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">📋 Código</div>
+        <div class="info-value">${equipo.codigo || 'N/A'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">📁 Categoría</div>
+        <div class="info-value">${equipo.categoria || 'Sin categoría'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">🏢 Marca</div>
+        <div class="info-value">${equipo.marca || 'N/A'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">🔢 Modelo</div>
+        <div class="info-value">${equipo.modelo || 'N/A'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">🔖 Nro. Serie</div>
+        <div class="info-value">${equipo.nro_serie || 'N/A'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">📍 Ubicación</div>
+        <div class="info-value">${equipo.ubicacion || 'Sin ubicación'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">📅 Fecha Compra</div>
+        <div class="info-value">${equipo.fecha_compra ? new Date(equipo.fecha_compra).toLocaleDateString('es-PA') : 'No registrada'
