@@ -2,15 +2,11 @@
 require_once BASE_PATH.'/core/DB.php';
 
 class Mantenimiento {
-  // Devuelve columnas por estado con % calculado por tareas
+  // Devuelve columnas por estado con progreso manual
   public static function porEstado(){
     $sql = "SELECT m.*, e.nombre AS equipo_nombre,
                  COALESCE(tt.total, 0) total_tareas,
-                 COALESCE(th.hechas, 0) hechas_tareas,
-                 CASE 
-                   WHEN COALESCE(tt.total, 0) = 0 THEN 0
-                   ELSE ROUND(100.0 * COALESCE(th.hechas, 0) / tt.total) 
-                 END AS pct
+                 COALESCE(m.progreso, 0) AS pct
           FROM mantenimientos m
           JOIN equipos e ON e.id = m.equipo_id
           LEFT JOIN (
@@ -18,12 +14,6 @@ class Mantenimiento {
              FROM mantenimiento_tareas 
              GROUP BY mantenimiento_id
           ) tt ON tt.mantenimiento_id = m.id
-          LEFT JOIN (
-             SELECT mantenimiento_id, COUNT(*) hechas 
-             FROM mantenimiento_tareas 
-             WHERE hecho = 1 
-             GROUP BY mantenimiento_id
-          ) th ON th.mantenimiento_id = m.id
           ORDER BY m.updated_at DESC";
     
     $rows = DB::pdo()->query($sql)->fetchAll();
@@ -53,18 +43,43 @@ class Mantenimiento {
       return false;
     }
     
-    $st = DB::pdo()->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() WHERE id = ?");
+    // Si se mueve a completado, poner progreso en 100%
+    $progreso_update = '';
+    if($nuevo_estado === 'completado'){
+      $progreso_update = ', progreso = 100';
+    } elseif($nuevo_estado === 'pendiente'){
+      $progreso_update = ', progreso = 0';
+    }
+    
+    $st = DB::pdo()->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() $progreso_update WHERE id = ?");
     $st->execute([$nuevo_estado, $id]);
     
     log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
     return true;
   }
   
+  // NUEVO: Actualizar progreso manualmente
+  public static function actualizarProgreso($id, $progreso){
+    $progreso = max(0, min(100, (int)$progreso)); // Limitar entre 0-100
+    
+    $st = DB::pdo()->prepare("UPDATE mantenimientos SET progreso = ?, updated_at = NOW() WHERE id = ?");
+    $st->execute([$progreso, $id]);
+    
+    log_audit('mantenimientos', $id, 'update', ['progreso' => $progreso]);
+    
+    // Si llega a 100%, mover automáticamente a completado
+    if($progreso >= 100){
+      self::mover($id, 'completado');
+    }
+    
+    return true;
+  }
+  
+  // Las tareas ya NO afectan el progreso
   public static function toggleTarea($tarea_id, $hecho){
     $st = DB::pdo()->prepare("UPDATE mantenimiento_tareas SET hecho = ? WHERE id = ?");
     $st->execute([(int)$hecho, $tarea_id]);
     
-    // Obtener el ID del mantenimiento asociado
     $mid = DB::pdo()->query("SELECT mantenimiento_id FROM mantenimiento_tareas WHERE id = " . (int)$tarea_id)->fetchColumn();
     
     log_audit('mantenimiento_tareas', $tarea_id, 'update', ['hecho' => $hecho]);
@@ -73,7 +88,6 @@ class Mantenimiento {
   }
   
   public static function crearTarea($mantenimiento_id, $titulo){
-    // Obtener el orden más alto actual
     $max_orden = DB::pdo()->query(
       "SELECT COALESCE(MAX(orden), 0) FROM mantenimiento_tareas WHERE mantenimiento_id = " . (int)$mantenimiento_id
     )->fetchColumn();
@@ -93,68 +107,56 @@ class Mantenimiento {
     return $tarea_id;
   }
   
-  /**
-   * Crear nuevo mantenimiento
-   * @param array $d Datos del mantenimiento
-   * @return int ID del mantenimiento creado
-   */
- public static function create($d){
-  $sql = "INSERT INTO mantenimientos (
-            equipo_id, titulo, descripcion, tipo, prioridad, fecha_programada,
-            costo_estimado, estado, tecnico_id
-          ) VALUES (
-            :equipo_id, :titulo, :descripcion, :tipo, :prioridad, :fecha_programada,
-            :costo_estimado, :estado, :tecnico_id
-          )";
+  public static function create($d){
+    $sql = "INSERT INTO mantenimientos (
+              equipo_id, titulo, descripcion, tipo, prioridad, fecha_programada,
+              costo_estimado, estado, tecnico_id, progreso
+            ) VALUES (
+              :equipo_id, :titulo, :descripcion, :tipo, :prioridad, :fecha_programada,
+              :costo_estimado, :estado, :tecnico_id, 0
+            )";
 
-  $pdo = DB::pdo();
-  $st  = $pdo->prepare($sql);
+    $pdo = DB::pdo();
+    $st  = $pdo->prepare($sql);
 
-  // Normaliza datos
-  $equipo_id       = (int)($d['equipo_id'] ?? 0);
-  $titulo          = trim($d['titulo'] ?? '');
-  $descripcion     = trim($d['descripcion'] ?? '');
-  $tipo            = $d['tipo'] ?? 'preventivo';
-  $prioridad       = $d['prioridad'] ?? 'media';
-  $fecha_programada= ($d['fecha_programada'] ?? '') ?: null;  // '' -> NULL
-  $costo_estimado  = ($d['costo_estimado']   ?? '') === '' ? null : $d['costo_estimado'];
-  $estado          = $d['estado'] ?? 'pendiente';
-  $tecnico_id      = isset($d['tecnico_id']) && $d['tecnico_id'] !== '' ? (int)$d['tecnico_id'] : null;
+    $equipo_id       = (int)($d['equipo_id'] ?? 0);
+    $titulo          = trim($d['titulo'] ?? '');
+    $descripcion     = trim($d['descripcion'] ?? '');
+    $tipo            = $d['tipo'] ?? 'preventivo';
+    $prioridad       = $d['prioridad'] ?? 'media';
+    $fecha_programada= ($d['fecha_programada'] ?? '') ?: null;
+    $costo_estimado  = ($d['costo_estimado']   ?? '') === '' ? null : $d['costo_estimado'];
+    $estado          = $d['estado'] ?? 'pendiente';
+    $tecnico_id      = isset($d['tecnico_id']) && $d['tecnico_id'] !== '' ? (int)$d['tecnico_id'] : null;
 
-  // Bind 1-a-1 (evita HY093)
-  $st->bindValue(':equipo_id', $equipo_id, \PDO::PARAM_INT);
-  $st->bindValue(':titulo', $titulo, \PDO::PARAM_STR);
-  $st->bindValue(':descripcion', $descripcion, \PDO::PARAM_STR);
-  $st->bindValue(':tipo', $tipo, \PDO::PARAM_STR);
-  $st->bindValue(':prioridad', $prioridad, \PDO::PARAM_STR);
+    $st->bindValue(':equipo_id', $equipo_id, \PDO::PARAM_INT);
+    $st->bindValue(':titulo', $titulo, \PDO::PARAM_STR);
+    $st->bindValue(':descripcion', $descripcion, \PDO::PARAM_STR);
+    $st->bindValue(':tipo', $tipo, \PDO::PARAM_STR);
+    $st->bindValue(':prioridad', $prioridad, \PDO::PARAM_STR);
 
-  if ($fecha_programada === null) $st->bindValue(':fecha_programada', null, \PDO::PARAM_NULL);
-  else                            $st->bindValue(':fecha_programada', $fecha_programada, \PDO::PARAM_STR);
+    if ($fecha_programada === null) $st->bindValue(':fecha_programada', null, \PDO::PARAM_NULL);
+    else                            $st->bindValue(':fecha_programada', $fecha_programada, \PDO::PARAM_STR);
 
-  if ($costo_estimado === null)   $st->bindValue(':costo_estimado', null, \PDO::PARAM_NULL);
-  else                            $st->bindValue(':costo_estimado', $costo_estimado, \PDO::PARAM_STR);
+    if ($costo_estimado === null)   $st->bindValue(':costo_estimado', null, \PDO::PARAM_NULL);
+    else                            $st->bindValue(':costo_estimado', $costo_estimado, \PDO::PARAM_STR);
 
-  $st->bindValue(':estado', $estado, \PDO::PARAM_STR);
+    $st->bindValue(':estado', $estado, \PDO::PARAM_STR);
 
-  if ($tecnico_id === null)       $st->bindValue(':tecnico_id', null, \PDO::PARAM_NULL);
-  else                            $st->bindValue(':tecnico_id', $tecnico_id, \PDO::PARAM_INT);
+    if ($tecnico_id === null)       $st->bindValue(':tecnico_id', null, \PDO::PARAM_NULL);
+    else                            $st->bindValue(':tecnico_id', $tecnico_id, \PDO::PARAM_INT);
 
-  $st->execute();
+    $st->execute();
 
-  $id = $pdo->lastInsertId();
-  log_audit('mantenimientos', $id, 'insert', [
-    'equipo_id'=>$equipo_id,'titulo'=>$titulo,'tipo'=>$tipo,'prioridad'=>$prioridad,
-    'fecha_programada'=>$fecha_programada,'costo_estimado'=>$costo_estimado,
-    'estado'=>$estado,'tecnico_id'=>$tecnico_id
-  ]);
-  return $id;
-}
-
+    $id = $pdo->lastInsertId();
+    log_audit('mantenimientos', $id, 'insert', [
+      'equipo_id'=>$equipo_id,'titulo'=>$titulo,'tipo'=>$tipo,'prioridad'=>$prioridad,
+      'fecha_programada'=>$fecha_programada,'costo_estimado'=>$costo_estimado,
+      'estado'=>$estado,'tecnico_id'=>$tecnico_id
+    ]);
+    return $id;
+  }
   
-  /**
-   * Eliminar mantenimiento
-   * @param int $id ID del mantenimiento
-   */
   public static function delete($id){
     DB::pdo()->prepare("DELETE FROM mantenimientos WHERE id=?")->execute([$id]);
     log_audit('mantenimientos', $id, 'delete', null);

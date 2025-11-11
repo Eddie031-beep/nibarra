@@ -59,7 +59,6 @@ class MantenimientoController {
     redirect('/mantenimiento');
   }
   
-  // ⭐ NUEVO MÉTODO - Este es el que agregamos
   public function obtener($id) {
     Auth::requireLogin();
     
@@ -90,12 +89,8 @@ class MantenimientoController {
       $tareas = $stmt_tareas->fetchAll();
       
       $mant['tareas'] = $tareas;
-      
-      $total_tareas = count($tareas);
-      $tareas_completadas = count(array_filter($tareas, fn($t) => $t['hecho'] == 1));
-      $mant['total_tareas'] = $total_tareas;
-      $mant['hechas_tareas'] = $tareas_completadas;
-      $mant['progreso'] = $total_tareas > 0 ? round(($tareas_completadas / $total_tareas) * 100) : 0;
+      $mant['total_tareas'] = count($tareas);
+      $mant['progreso'] = (int)($mant['progreso'] ?? 0);
       
       Response::json($mant);
       
@@ -114,6 +109,18 @@ class MantenimientoController {
     Response::json(['ok'=>true]); 
   }
   
+  // NUEVO: Endpoint para actualizar progreso
+  public function actualizarProgreso(){
+    Auth::requireLogin();
+    Permisos::requireEditar();
+    
+    $id = (int)post('mantenimiento_id');
+    $progreso = (int)post('progreso');
+    
+    Mantenimiento::actualizarProgreso($id, $progreso);
+    Response::json(['ok'=>true, 'progreso'=>$progreso]);
+  }
+  
   public function tareaToggle(){ 
     Auth::requireLogin();
     Permisos::requireEditar();
@@ -130,22 +137,19 @@ class MantenimientoController {
     Response::json(['ok'=>true]); 
   }
   
-  // ⭐ NUEVO MÉTODO - Eliminar tarea
   public function tareaEliminar(){
     Auth::requireLogin();
-    Permisos::requireEditar(); // Admin y Técnico pueden eliminar tareas
+    Permisos::requireEditar();
     
     $tarea_id = (int)post('tarea_id');
     
     try {
       $pdo = DB::pdo();
       
-      // Obtener el mantenimiento_id antes de eliminar
       $stmt = $pdo->prepare("SELECT mantenimiento_id FROM mantenimiento_tareas WHERE id = ?");
       $stmt->execute([$tarea_id]);
       $mantenimiento_id = $stmt->fetchColumn();
       
-      // Eliminar la tarea
       $stmt = $pdo->prepare("DELETE FROM mantenimiento_tareas WHERE id = ?");
       $stmt->execute([$tarea_id]);
       

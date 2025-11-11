@@ -194,6 +194,12 @@ try {
       }
     }
 
+    // Después de /mantenimiento/tareaNueva
+if ($method==='POST' && $route==='/mantenimiento/actualizarProgreso') { 
+  (new MantenimientoController)->actualizarProgreso(); 
+  return; 
+}
+
     // ============================================
     // 404 - RUTA NO ENCONTRADA
     // ============================================

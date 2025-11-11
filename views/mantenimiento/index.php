@@ -19,17 +19,39 @@ $equipos = Equipo::all();
     .cardx .delete-btn{position:absolute;top:8px;right:8px;background:#7f1d1d;border:0;color:white;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;z-index:10}
     .cardx .delete-btn:hover{background:#991b1b}
     .meta{font-size:11px;color:#94a3b8;margin-bottom:6px}
-    .progress{height:8px;background:#1f2937;border-radius:999px;overflow:hidden;margin:8px 0}
-    .bar{height:8px}
-    .bar-baja{background:#10b981}
-    .bar-media{background:#f59e0b}
-    .bar-alta{background:#ef4444}
-    .bar-critica{background:#7f1d1d}
+    
+    /* Barra de progreso mejorada */
+    .progress-container{margin:8px 0}
+    .progress-label{display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px}
+    .progress{height:10px;background:#1f2937;border-radius:999px;overflow:hidden;position:relative;cursor:pointer;transition:all .2s}
+    .progress:hover{height:12px;box-shadow:0 0 10px rgba(79,70,229,.3)}
+    .bar{height:100%;transition:width .3s ease;position:relative}
+    .bar::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);animation:shimmer 2s infinite}
+    @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    
+    .bar-baja{background:linear-gradient(90deg,#10b981,#059669)}
+    .bar-media{background:linear-gradient(90deg,#f59e0b,#d97706)}
+    .bar-alta{background:linear-gradient(90deg,#ef4444,#dc2626)}
+    .bar-critica{background:linear-gradient(90deg,#7f1d1d,#991b1b)}
+    
     .actions{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
     .btn{border:1px solid #2b364b;background:#111827;color:#e5e7eb;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:11px;transition:all .2s}
     .btn:hover{background:#1f2937;border-color:#4f46e5}
     .btn-primary{background:#4f46e5;border:0;color:white;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;transition:all .3s}
     .btn-primary:hover{background:#4338ca;transform:translateY(-2px)}
+    
+    /* Slider de progreso en modal */
+    .progress-editor{background:#0b1220;border:1px solid #1e293b;border-radius:12px;padding:16px;margin:20px 0}
+    .progress-editor h4{margin:0 0 12px 0;color:#cbd5e1;font-size:14px;display:flex;align-items:center;gap:8px}
+    .progress-slider{width:100%;height:8px;background:#1f2937;border-radius:999px;appearance:none;cursor:pointer;margin:12px 0}
+    .progress-slider::-webkit-slider-thumb{appearance:none;width:20px;height:20px;background:#4f46e5;border-radius:50%;cursor:pointer;box-shadow:0 0 10px rgba(79,70,229,.5)}
+    .progress-slider::-moz-range-thumb{width:20px;height:20px;background:#4f46e5;border-radius:50%;cursor:pointer;box-shadow:0 0 10px rgba(79,70,229,.5);border:0}
+    .progress-display{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+    .progress-number{font-size:32px;font-weight:800;color:#4f46e5;min-width:80px;text-align:center}
+    .progress-quick-btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+    .progress-quick-btn{padding:6px 12px;background:#1f2937;border:1px solid #334155;color:#cbd5e1;border-radius:8px;font-size:11px;cursor:pointer;transition:all .2s}
+    .progress-quick-btn:hover{background:#334155;border-color:#4f46e5;color:#4f46e5}
+    
     .tasks{margin-top:6px;font-size:12px}
     .task{display:flex;align-items:center;gap:6px;margin:4px 0}
     .task input{accent-color:#4f46e5}
@@ -101,7 +123,6 @@ $equipos = Equipo::all();
     
     .scroll-indicator{text-align:center;padding:8px;color:#64748b;font-size:11px;animation:bounce 2s infinite}
     @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
     
     @media(max-width:1200px){.board{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:768px){
@@ -149,12 +170,15 @@ $equipos = Equipo::all();
               </span>
             </div>
             
-            <div class="progress">
-              <div class="bar bar-<?= safe($t['prioridad']) ?>" style="width:<?= (int)$t['pct'] ?>%"></div>
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>Progreso</span>
+                <span><b><?= (int)$t['pct'] ?>%</b></span>
+              </div>
+              <div class="progress">
+                <div class="bar bar-<?= safe($t['prioridad']) ?>" style="width:<?= (int)$t['pct'] ?>%"></div>
+              </div>
             </div>
-            <small style="color:#94a3b8">
-              <?= (int)$t['hechas_tareas'] ?>/<?= (int)$t['total_tareas'] ?> tareas (<?= (int)$t['pct'] ?>%)
-            </small>
 
             <div class="actions" onclick="event.stopPropagation()">
               <?php foreach($order as $kk): if($kk===$k) continue; ?>
@@ -256,6 +280,7 @@ $equipos = Equipo::all();
 
   <script>
     let currentMantenimientoId = null;
+    let currentProgreso = 0;
     
     async function verDetalle(id) {
       currentMantenimientoId = id;
@@ -270,6 +295,7 @@ $equipos = Equipo::all();
         const data = await response.json();
         
         if (data) {
+          currentProgreso = parseInt(data.progreso) || 0;
           document.getElementById('previewTitle').textContent = `#${data.id} - ${data.titulo}`;
           
           const prioridadClass = `priority-${data.prioridad}`;
@@ -290,6 +316,41 @@ $equipos = Equipo::all();
           }[data.estado] || '❓';
           
           content.innerHTML = `
+            <div class="progress-editor">
+              <h4>📊 Control de Progreso Manual</h4>
+              <p style="font-size:12px;color:#94a3b8;margin-bottom:12px">
+                Ajusta el progreso del mantenimiento de 0% a 100%
+              </p>
+              
+              <input type="range" 
+                     min="0" 
+                     max="100" 
+                     value="${currentProgreso}" 
+                     class="progress-slider"
+                     id="progressSlider"
+                     oninput="updateProgressDisplay(this.value)"
+                     onchange="guardarProgreso(this.value)">
+              
+              <div class="progress-display">
+                <div class="progress-number" id="progressNumber">${currentProgreso}%</div>
+                <div style="flex:1">
+                  <div class="progress" style="height:20px">
+                    <div class="bar bar-${data.prioridad}" 
+                         style="width:${currentProgreso}%"
+                         id="progressBar"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="progress-quick-btns">
+                <button class="progress-quick-btn" onclick="setProgreso(0)">0%</button>
+                <button class="progress-quick-btn" onclick="setProgreso(25)">25%</button>
+                <button class="progress-quick-btn" onclick="setProgreso(50)">50%</button>
+                <button class="progress-quick-btn" onclick="setProgreso(75)">75%</button>
+                <button class="progress-quick-btn" onclick="setProgreso(100)">100%</button>
+              </div>
+            </div>
+            
             <div class="info-grid">
               <div class="info-item">
                 <div class="info-label">Equipo</div>
@@ -329,7 +390,10 @@ $equipos = Equipo::all();
             
             ${data.tareas && data.tareas.length > 0 ? `
               <div class="preview-section">
-                <h4>✅ Tareas (${data.tareas.filter(t => t.hecho).length}/${data.tareas.length})</h4>
+                <h4>📝 Notas y Tareas Adicionales (${data.tareas.length})</h4>
+                <p style="font-size:12px;margin-bottom:12px">
+                  Registro de actividades y tareas realizadas durante el mantenimiento
+                </p>
                 <div class="task-list">
                   ${data.tareas.map(tarea => `
                     <div class="task-item ${tarea.hecho ? 'completed' : ''}">
@@ -346,9 +410,12 @@ $equipos = Equipo::all();
             ` : ''}
             
             <div class="preview-section" style="margin-bottom:0">
-              <h4>➕ Agregar Nueva Tarea</h4>
+              <h4>➕ Agregar Nota/Tarea</h4>
+              <p style="font-size:12px;margin-bottom:8px">
+                Registra actividades o hallazgos durante el mantenimiento
+              </p>
               <div class="newtask">
-                <input placeholder="Descripción de la tarea..." id="newTaskInput-${id}">
+                <input placeholder="Ej: Se cambió filtro de aire..." id="newTaskInput-${id}">
                 <button class="btn-primary" onclick="crearTarea(${id})">Agregar</button>
               </div>
             </div>
@@ -372,13 +439,61 @@ $equipos = Equipo::all();
       }
     }
     
+    function updateProgressDisplay(value) {
+      currentProgreso = parseInt(value);
+      document.getElementById('progressNumber').textContent = currentProgreso + '%';
+      document.getElementById('progressBar').style.width = currentProgreso + '%';
+    }
+    
+    function setProgreso(value) {
+      document.getElementById('progressSlider').value = value;
+      updateProgressDisplay(value);
+      guardarProgreso(value);
+    }
+    
+    async function guardarProgreso(progreso) {
+      if (!currentMantenimientoId) return;
+      
+      try {
+        const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/actualizarProgreso', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `mantenimiento_id=${currentMantenimientoId}&progreso=${progreso}`
+        });
+        
+        const data = await r.json();
+        
+        if (r.ok && data.ok) {
+          // Actualizar la tarjeta en el tablero
+          const card = document.getElementById(`mant-${currentMantenimientoId}`);
+          if (card) {
+            const progressBar = card.querySelector('.bar');
+            const progressLabel = card.querySelector('.progress-label span:last-child b');
+            if (progressBar) progressBar.style.width = progreso + '%';
+            if (progressLabel) progressLabel.textContent = progreso + '%';
+          }
+          
+          // Si llega a 100%, notificar que se completó
+          if (parseInt(progreso) >= 100) {
+            setTimeout(() => {
+              alert('✅ Mantenimiento completado al 100%. Se moverá automáticamente a "Completado".');
+              location.reload();
+            }, 500);
+          }
+        }
+      } catch (error) {
+        console.error('Error al guardar progreso:', error);
+        alert('❌ Error al guardar el progreso. Intenta de nuevo.');
+      }
+    }
+    
     function cerrarPreview() {
       document.getElementById('modalPreview').classList.remove('active');
       currentMantenimientoId = null;
     }
     
     async function eliminarTarea(tarea_id, mantenimiento_id) {
-      if (!confirm('¿Estás seguro de eliminar esta tarea?')) {
+      if (!confirm('¿Estás seguro de eliminar esta nota/tarea?')) {
         return;
       }
       
@@ -396,10 +511,10 @@ $equipos = Equipo::all();
             verDetalle(currentMantenimientoId);
           }
         } else {
-          alert('Error al eliminar la tarea: ' + (data.error || 'Error desconocido'));
+          alert('Error al eliminar la nota: ' + (data.error || 'Error desconocido'));
         }
       } catch (error) {
-        alert('Error de conexión al eliminar la tarea');
+        alert('Error de conexión al eliminar la nota');
         console.error('Error:', error);
       }
     }
@@ -420,8 +535,14 @@ $equipos = Equipo::all();
         body: `tarea_id=${tarea_id}&hecho=${el.checked ? 1 : 0}`
       });
       if (r.ok) {
-        if (currentMantenimientoId) {
-          verDetalle(currentMantenimientoId);
+        // Solo actualizar visualmente, no afecta el progreso
+        const taskItem = el.closest('.task-item');
+        if (taskItem) {
+          if (el.checked) {
+            taskItem.classList.add('completed');
+          } else {
+            taskItem.classList.remove('completed');
+          }
         }
       }
     }
@@ -447,6 +568,7 @@ $equipos = Equipo::all();
       document.getElementById('modalNuevo').classList.remove('active');
     }
     
+    // Cerrar modales con ESC
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         cerrarModal();
@@ -454,6 +576,7 @@ $equipos = Equipo::all();
       }
     });
     
+    // Cerrar modal al hacer clic fuera
     document.getElementById('modalNuevo').addEventListener('click', function(e) {
       if (e.target === this) cerrarModal();
     });
@@ -461,5 +584,10 @@ $equipos = Equipo::all();
     document.getElementById('modalPreview').addEventListener('click', function(e) {
       if (e.target === this) cerrarPreview();
     });
+    
+    // Animación spin para loading
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
   </script>
 </section>
