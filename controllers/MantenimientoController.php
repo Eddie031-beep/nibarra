@@ -1,5 +1,6 @@
 <?php
 require_once BASE_PATH.'/models/Mantenimiento.php';
+require_once BASE_PATH.'/core/Permisos.php';
 
 class MantenimientoController {
   public function index(){ 
@@ -10,6 +11,7 @@ class MantenimientoController {
   
   public function store(){
     Auth::requireLogin();
+    Permisos::requireCrear(); // ✅ Solo admin y técnico
     
     $equipo_id = (int)post('equipo_id');
     $titulo = post('titulo');
@@ -59,25 +61,33 @@ class MantenimientoController {
   }
   
   public function mover(){ 
-    Auth::requireLogin(); 
+    Auth::requireLogin();
+    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    
     Mantenimiento::mover((int)post('id'), post('estado')); 
     Response::json(['ok'=>true]); 
   }
   
   public function tareaToggle(){ 
-    Auth::requireLogin(); 
+    Auth::requireLogin();
+    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    
     $mid = Mantenimiento::toggleTarea((int)post('tarea_id'), (int)post('hecho')); 
     Response::json(['ok'=>true,'mantenimiento_id'=>$mid]); 
   }
   
   public function tareaNueva(){ 
-    Auth::requireLogin(); 
+    Auth::requireLogin();
+    Permisos::requireEditar(); // ✅ Solo admin y técnico
+    
     Mantenimiento::crearTarea((int)post('mantenimiento_id'), post('titulo')); 
     Response::json(['ok'=>true]); 
   }
   
   public function destroy($id){
     Auth::requireLogin();
+    Permisos::requireEliminar(); // ✅ Solo admin
+    
     Mantenimiento::delete($id);
     redirect('/mantenimiento');
   }
