@@ -19,6 +19,9 @@ try {
   require_once dirname(__DIR__).'/controllers/MantenimientoController.php';
   require_once dirname(__DIR__).'/controllers/ChatbotController.php';
   require_once dirname(__DIR__).'/controllers/DashboardController.php';
+  require_once dirname(__DIR__).'/controllers/FacturaController.php';
+  
+  $usuariosControllerPath = dirname(__DIR__).'/controllers/UsuariosController.php';
   
   $usuariosControllerPath = dirname(__DIR__).'/controllers/UsuariosController.php';
   if (file_exists($usuariosControllerPath)) {

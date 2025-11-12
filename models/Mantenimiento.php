@@ -35,28 +35,39 @@ class Mantenimiento {
     
     return $cols;
   }
-  
   public static function mover($id, $nuevo_estado){
-    $estados_validos = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
-    
-    if(!in_array($nuevo_estado, $estados_validos)){
-      return false;
-    }
-    
-    // Si se mueve a completado, poner progreso en 100%
-    $progreso_update = '';
-    if($nuevo_estado === 'completado'){
-      $progreso_update = ', progreso = 100';
-    } elseif($nuevo_estado === 'pendiente'){
-      $progreso_update = ', progreso = 0';
-    }
-    
-    $st = DB::pdo()->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() $progreso_update WHERE id = ?");
-    $st->execute([$nuevo_estado, $id]);
-    
-    log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
-    return true;
+  $estados_validos = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
+  
+  if(!in_array($nuevo_estado, $estados_validos)){
+    return false;
   }
+  
+  // Si se mueve a completado, poner progreso en 100%
+  $progreso_update = '';
+  if($nuevo_estado === 'completado'){
+    $progreso_update = ', progreso = 100';
+  } elseif($nuevo_estado === 'pendiente'){
+    $progreso_update = ', progreso = 0';
+  }
+  
+  $st = DB::pdo()->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() $progreso_update WHERE id = ?");
+  $st->execute([$nuevo_estado, $id]);
+  
+  log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
+  
+  // Si se completó, generar factura automáticamente
+  if($nuevo_estado === 'completado'){
+    try {
+      require_once BASE_PATH.'/models/Factura.php';
+      Factura::crearDesdeMantenimiento($id);
+    } catch (Exception $e) {
+      // Si ya existe factura o hay error, continuar sin romper el flujo
+      error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
+    }
+  }
+  
+  return true;
+}
   
   // NUEVO: Actualizar progreso manualmente
   public static function actualizarProgreso($id, $progreso){

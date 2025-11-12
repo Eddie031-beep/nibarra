@@ -100,14 +100,37 @@ class MantenimientoController {
       Response::json(['error' => 'Error al obtener datos: ' . $e->getMessage()]);
     }
   }
-  
   public function mover(){ 
-    Auth::requireLogin();
-    Permisos::requireEditar();
-    
-    Mantenimiento::mover((int)post('id'), post('estado')); 
-    Response::json(['ok'=>true]); 
+  Auth::requireLogin();
+  Permisos::requireEditar();
+  
+  $id = (int)post('id');
+  $estado = post('estado');
+  
+  $success = Mantenimiento::mover($id, $estado);
+  
+  // Si se movió a completado, verificar si se generó factura
+  if($success && $estado === 'completado'){
+    try {
+      require_once BASE_PATH.'/models/Factura.php';
+      $factura = Factura::obtenerPorMantenimiento($id);
+      
+      if($factura){
+        Response::json([
+          'ok' => true,
+          'factura_generada' => true,
+          'factura_numero' => $factura['numero_factura'],
+          'mensaje' => '✅ Mantenimiento completado y factura generada'
+        ]);
+        return;
+      }
+    } catch (Exception $e) {
+      error_log("Error al verificar factura: " . $e->getMessage());
+    }
   }
+  
+  Response::json(['ok' => $success]); 
+}
   
   // NUEVO: Endpoint para actualizar progreso
   public function actualizarProgreso(){

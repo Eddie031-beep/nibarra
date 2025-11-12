@@ -518,34 +518,35 @@ $equipos = Equipo::all();
         console.error('Error:', error);
       }
     }
-    
     async function mover(id, estado) {
-      const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/mover', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `id=${id}&estado=${encodeURIComponent(estado)}`
-      });
-      if (r.ok) location.reload();
-    }
+  try {
+    const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/mover', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `id=${id}&estado=${encodeURIComponent(estado)}`
+    });
     
-    async function toggleTarea(tarea_id, el) {
-      const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/tareaToggle', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `tarea_id=${tarea_id}&hecho=${el.checked ? 1 : 0}`
-      });
-      if (r.ok) {
-        // Solo actualizar visualmente, no afecta el progreso
-        const taskItem = el.closest('.task-item');
-        if (taskItem) {
-          if (el.checked) {
-            taskItem.classList.add('completed');
-          } else {
-            taskItem.classList.remove('completed');
-          }
+    const data = await r.json();
+    
+    if (r.ok && data.ok) {
+      // Si se generó factura, mostrar notificación especial
+      if (data.factura_generada) {
+        if (confirm(`✅ ${data.mensaje || 'Mantenimiento completado'}\n\nFactura: ${data.factura_numero}\n\n¿Quieres ver la factura ahora?`)) {
+          window.location.href = '<?= ENV_APP['BASE_URL'] ?>/facturas';
+        } else {
+          location.reload();
         }
+      } else {
+        location.reload();
       }
+    } else {
+      alert('Error al mover el mantenimiento');
     }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error de conexión');
+  }
+}
     
     async function crearTarea(mid) {
       const input = document.getElementById('newTaskInput-' + mid);

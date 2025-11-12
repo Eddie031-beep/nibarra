@@ -1,6 +1,8 @@
 <?php
+// FacturaController.php - Gestión de Facturas
 require_once BASE_PATH.'/models/Factura.php';
 require_once BASE_PATH.'/core/Permisos.php';
+require_once BASE_PATH.'/core/Response.php';
 
 class FacturaController {
   
