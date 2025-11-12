@@ -35,64 +35,68 @@ class Mantenimiento {
     
     return $cols;
   }
+  
   public static function mover($id, $nuevo_estado){
-  $estados_validos = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
-  
-  if(!in_array($nuevo_estado, $estados_validos)){
-    return false;
-  }
-  
-  // Si se mueve a completado, poner progreso en 100%
-  $progreso_update = '';
-  if($nuevo_estado === 'completado'){
-    $progreso_update = ', progreso = 100';
-  } elseif($nuevo_estado === 'pendiente'){
-    $progreso_update = ', progreso = 0';
-  }
-  
-  $st = DB::pdo()->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() $progreso_update WHERE id = ?");
-  $st->execute([$nuevo_estado, $id]);
-  
-  log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
-  
-  // Si se completó, generar factura automáticamente
-  if($nuevo_estado === 'completado'){
-    try {
-      require_once BASE_PATH.'/models/Factura.php';
-      Factura::crearDesdeMantenimiento($id);
-    } catch (Exception $e) {
-      // Si ya existe factura o hay error, continuar sin romper el flujo
-      error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
+    $estados_validos = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
+    
+    if(!in_array($nuevo_estado, $estados_validos)){
+      return false;
     }
+    
+    $pdo = DB::pdo();
+    
+    // Si se mueve a completado, poner progreso en 100% y generar factura
+    if($nuevo_estado === 'completado'){
+      $pdo->prepare("UPDATE mantenimientos SET estado = ?, progreso = 100, updated_at = NOW() WHERE id = ?")
+          ->execute([$nuevo_estado, $id]);
+      
+      log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado, 'progreso' => 100]);
+      
+      // Generar factura automáticamente
+      try {
+        require_once BASE_PATH.'/models/Factura.php';
+        $factura = Factura::crearDesdeMantenimiento($id);
+        return ['ok' => true, 'factura_generada' => true, 'factura_numero' => $factura['numero_factura']];
+      } catch (Exception $e) {
+        // Si ya existe factura o hay error, continuar sin romper el flujo
+        error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
+        return ['ok' => true, 'factura_generada' => false];
+      }
+    }
+    
+    // Si se mueve a pendiente, resetear progreso a 0
+    elseif($nuevo_estado === 'pendiente'){
+      $pdo->prepare("UPDATE mantenimientos SET estado = ?, progreso = 0, updated_at = NOW() WHERE id = ?")
+          ->execute([$nuevo_estado, $id]);
+    }
+    
+    // Para otros estados, solo actualizar estado
+    else {
+      $pdo->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() WHERE id = ?")
+          ->execute([$nuevo_estado, $id]);
+    }
+    
+    log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
+    
+    return ['ok' => true];
   }
-  
-  return true;
-}
   
   // NUEVO: Actualizar progreso manualmente
   public static function actualizarProgreso($id, $progreso){
     $progreso = max(0, min(100, (int)$progreso)); // Limitar entre 0-100
     
-    $st = DB::pdo()->prepare("UPDATE mantenimientos SET progreso = ?, updated_at = NOW() WHERE id = ?");
+    $pdo = DB::pdo();
+    $st = $pdo->prepare("UPDATE mantenimientos SET progreso = ?, updated_at = NOW() WHERE id = ?");
     $st->execute([$progreso, $id]);
     
     log_audit('mantenimientos', $id, 'update', ['progreso' => $progreso]);
     
     // Si llega a 100%, mover automáticamente a completado y generar factura
     if($progreso >= 100){
-      self::mover($id, 'completado');
-      
-      // Generar factura automáticamente
-      try {
-        require_once BASE_PATH.'/models/Factura.php';
-        Factura::crearDesdeMantenimiento($id);
-      } catch (Exception $e) {
-        // Si ya existe factura o hay error, continuar sin romper el flujo
-        error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
-      }
+      return self::mover($id, 'completado');
     }
     
-    return true;
+    return ['ok' => true];
   }
   
   // Las tareas ya NO afectan el progreso

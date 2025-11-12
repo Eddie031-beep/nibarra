@@ -100,39 +100,35 @@ class MantenimientoController {
       Response::json(['error' => 'Error al obtener datos: ' . $e->getMessage()]);
     }
   }
+  
   public function mover(){ 
-  Auth::requireLogin();
-  Permisos::requireEditar();
-  
-  $id = (int)post('id');
-  $estado = post('estado');
-  
-  $success = Mantenimiento::mover($id, $estado);
-  
-  // Si se movió a completado, verificar si se generó factura
-  if($success && $estado === 'completado'){
-    try {
-      require_once BASE_PATH.'/models/Factura.php';
-      $factura = Factura::obtenerPorMantenimiento($id);
-      
-      if($factura){
+    Auth::requireLogin();
+    Permisos::requireEditar();
+    
+    $id = (int)post('id');
+    $estado = post('estado');
+    
+    $result = Mantenimiento::mover($id, $estado);
+    
+    // Verificar si el resultado es un array (con información de factura)
+    if(is_array($result)){
+      // Si se generó factura, enviar información completa
+      if($result['factura_generada'] ?? false){
         Response::json([
           'ok' => true,
           'factura_generada' => true,
-          'factura_numero' => $factura['numero_factura'],
-          'mensaje' => '✅ Mantenimiento completado y factura generada'
+          'factura_numero' => $result['factura_numero'],
+          'mensaje' => '✅ Mantenimiento completado y factura generada automáticamente'
         ]);
         return;
       }
-    } catch (Exception $e) {
-      error_log("Error al verificar factura: " . $e->getMessage());
     }
+    
+    // Respuesta simple si no hay factura
+    Response::json(['ok' => is_array($result) ? $result['ok'] : $result]); 
   }
   
-  Response::json(['ok' => $success]); 
-}
-  
-  // NUEVO: Endpoint para actualizar progreso
+  // Actualizar progreso manual
   public function actualizarProgreso(){
     Auth::requireLogin();
     Permisos::requireEditar();
@@ -140,8 +136,22 @@ class MantenimientoController {
     $id = (int)post('mantenimiento_id');
     $progreso = (int)post('progreso');
     
-    Mantenimiento::actualizarProgreso($id, $progreso);
-    Response::json(['ok'=>true, 'progreso'=>$progreso]);
+    $result = Mantenimiento::actualizarProgreso($id, $progreso);
+    
+    // Si el progreso llegó a 100%, se genera factura automáticamente
+    if(is_array($result) && ($result['factura_generada'] ?? false)){
+      Response::json([
+        'ok' => true,
+        'progreso' => 100,
+        'completado' => true,
+        'factura_generada' => true,
+        'factura_numero' => $result['factura_numero'],
+        'mensaje' => '✅ Mantenimiento completado al 100% y factura generada'
+      ]);
+      return;
+    }
+    
+    Response::json(['ok' => true, 'progreso' => $progreso]);
   }
   
   public function tareaToggle(){ 
@@ -191,12 +201,5 @@ class MantenimientoController {
     
     Mantenimiento::delete($id);
     redirect('/mantenimiento');
-  }
-}
-
-function editarDesdePreview() {
-  if (currentEquipoData) {
-    editarEquipo(currentEquipoData.id, currentEquipoData);
-    cerrarPreviewEquipo();
   }
 }
