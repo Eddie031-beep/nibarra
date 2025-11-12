@@ -86,15 +86,21 @@ $monthNames = [
   border:1px solid var(--border-color);
   border-radius:0.75rem;
   min-height:120px;
-  padding:0.75rem;
+  max-height:140px;
+  padding:0.5rem;
   transition:all .2s;
   position:relative;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
 }
 
 .calendar-day:hover{
   border-color:var(--accent-blue);
   box-shadow:0 4px 15px rgba(33,150,243,.2);
   transform:translateY(-2px);
+  max-height:none;
+  z-index:10;
 }
 
 .calendar-day.today{
@@ -105,25 +111,57 @@ $monthNames = [
 .day-number{
   font-weight:700;
   color:var(--text-primary);
-  margin-bottom:0.5rem;
-  font-size:1.125rem;
+  margin-bottom:0.375rem;
+  font-size:0.9rem;
+  flex-shrink:0;
 }
 
 .calendar-day.today .day-number{
   color:var(--accent-green);
 }
 
+/* Contenedor de eventos con scroll */
+.calendar-events-container{
+  flex:1;
+  overflow:hidden;
+  position:relative;
+}
+
+.calendar-day:hover .calendar-events-container{
+  overflow-y:auto;
+  max-height:300px;
+}
+
+.calendar-events-container::-webkit-scrollbar{
+  width:4px;
+}
+
+.calendar-events-container::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.calendar-events-container::-webkit-scrollbar-thumb{
+  background:#334155;
+  border-radius:2px;
+}
+
+.calendar-events{
+  display:flex;
+  flex-direction:column;
+  gap:0.25rem;
+}
+
 .event-item{
   background:var(--accent-blue);
   color:white;
-  padding:0.375rem 0.5rem;
+  padding:0.25rem 0.375rem;
   border-radius:0.375rem;
-  font-size:0.75rem;
-  margin-bottom:0.375rem;
+  font-size:0.7rem;
   cursor:pointer;
   transition:all .2s;
   position:relative;
   overflow:hidden;
+  line-height:1.3;
 }
 
 .event-item:hover{
@@ -145,7 +183,45 @@ $monthNames = [
 
 .event-time{
   opacity:0.9;
-  font-size:0.7rem;
+  font-size:0.65rem;
+}
+
+/* Indicador de más eventos */
+.more-events-indicator{
+  position:sticky;
+  bottom:0;
+  background:linear-gradient(to top, var(--bg-secondary) 70%, transparent);
+  padding:0.25rem 0.5rem;
+  text-align:center;
+  font-size:0.65rem;
+  color:var(--accent-blue);
+  font-weight:600;
+  cursor:pointer;
+  margin-top:0.25rem;
+}
+
+.more-events-indicator:hover{
+  color:var(--accent-purple);
+}
+
+.calendar-day:hover .more-events-indicator{
+  display:none;
+}
+
+/* Colores personalizados */
+.event-item[style*="background:#ef4444"],
+.event-item[style*="background:rgb(239, 68, 68)"]{
+  background:#7f1d1d !important;
+}
+
+.event-item[style*="background:#10b981"],
+.event-item[style*="background:rgb(16, 185, 129)"]{
+  background:#047857 !important;
+}
+
+.event-item[style*="background:#f59e0b"],
+.event-item[style*="background:rgb(245, 158, 11)"]{
+  background:#92400e !important;
 }
 
 .event-actions{
@@ -190,40 +266,6 @@ $monthNames = [
 
 .event-delete:hover{
   background:#ef4444;
-}
-
-.event-item[data-color="red"] {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--danger);
-}
-
-.event-item[data-color="green"] {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: var(--success);
-}
-
-.event-item[data-color="yellow"] {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: var(--warning);
-}
-
-.event-item[data-color="blue"] {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: var(--info);
-}
-
-.calendar-more-events {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 0.25rem;
-  cursor: pointer;
-  margin-top: 0.25rem;
-}
-
-.calendar-more-events:hover {
-  color: var(--primary);
-  text-decoration: underline;
 }
 
 .add-event-section{
@@ -474,12 +516,13 @@ $monthNames = [
 }
 
 @media(max-width:768px){
-  .calendar-grid{
+  .calendar-days{
     gap:0.25rem;
   }
   
   .calendar-day{
     min-height:80px;
+    max-height:100px;
     padding:0.375rem;
   }
   
@@ -488,45 +531,12 @@ $monthNames = [
   }
   
   .event-item{
-    font-size:0.6875rem;
-    padding:0.25rem 0.375rem;
-  }
-  
-  .event-title{
-    font-size:0.6875rem;
-  }
-  
-  .event-time{
-    font-size:0.625rem;
+    font-size:0.65rem;
+    padding:0.2rem 0.3rem;
   }
   
   .event-form{
     grid-template-columns:1fr;
-    padding:1rem;
-  }
-  
-  .calendar-toolbar{
-    flex-direction:column;
-    gap:0.75rem;
-  }
-  
-  .calendar-toolbar .month-display{
-    order:-1;
-  }
-}
-
-@media(max-width:480px){
-  .calendar-header{
-    font-size:0.75rem;
-    padding:0.5rem 0.25rem;
-  }
-  
-  .calendar-day{
-    min-height:60px;
-  }
-  
-  .calendar-events{
-    max-height:40px;
   }
 }
 </style>
@@ -582,39 +592,57 @@ $monthNames = [
         
         // Días del mes
         $today = date('Y-m-d');
+        $MAX_VISIBLE_EVENTS = 2; // Mostrar máximo 2 eventos sin hover
+        
         for($d=1; $d<=$days; $d++):
           $date = sprintf('%04d-%02d-%02d', $y, $m, $d);
           $isToday = $date === $today;
+          $dayEvents = $map[$date] ?? [];
+          $eventCount = count($dayEvents);
+          $hiddenCount = max(0, $eventCount - $MAX_VISIBLE_EVENTS);
       ?>
         <div class="calendar-day <?= $isToday ? 'today' : '' ?>">
           <div class="day-number"><?= $d ?></div>
           
-          <?php if(!empty($map[$date])): ?>
-            <?php foreach($map[$date] as $ev): ?>
-              <div class="event-item <?= (int)$ev['all_day'] === 1 ? 'all-day' : '' ?>" 
-                   style="<?= $ev['color'] ? 'background:'.safe($ev['color']) : '' ?>"
-                   title="<?= safe($ev['titulo']) ?>"
-                   onclick="verDetalleEvento(<?= (int)$ev['id'] ?>, <?= htmlspecialchars(json_encode($ev), ENT_QUOTES) ?>)">
-                <div class="event-title"><?= safe($ev['titulo']) ?></div>
-                <div class="event-time">
-                  <?php if((int)$ev['all_day'] === 1): ?>
-                    Todo el día
-                  <?php else: ?>
-                    <?= date('H:i', strtotime($ev['inicio'])) ?>
-                    <?php if($ev['fin']): ?>
-                      - <?= date('H:i', strtotime($ev['fin'])) ?>
-                    <?php endif; ?>
-                  <?php endif; ?>
-                </div>
-                <div class="event-actions" onclick="event.stopPropagation()">
-                  <button class="event-edit" onclick="editarEvento(<?= (int)$ev['id'] ?>, <?= htmlspecialchars(json_encode($ev), ENT_QUOTES) ?>)">✏️</button>
-                  <form method="post" action="<?= ENV_APP['BASE_URL'].'/calendario/delete/'.$ev['id'] ?>" 
-                        onsubmit="return confirm('¿Eliminar evento?')" style="display:inline">
-                    <button type="submit" class="event-delete">✕</button>
-                  </form>
-                </div>
+          <?php if(!empty($dayEvents)): ?>
+            <div class="calendar-events-container">
+              <div class="calendar-events">
+                <?php 
+                  // Mostrar todos los eventos, el CSS se encarga de la visualización
+                  foreach($dayEvents as $ev): 
+                ?>
+                  <div class="event-item <?= (int)$ev['all_day'] === 1 ? 'all-day' : '' ?>" 
+                       style="<?= $ev['color'] ? 'background:'.safe($ev['color']) : '' ?>"
+                       title="<?= safe($ev['titulo']) ?>"
+                       onclick="verDetalleEvento(<?= (int)$ev['id'] ?>, <?= htmlspecialchars(json_encode($ev), ENT_QUOTES) ?>)">
+                    <div class="event-title"><?= safe($ev['titulo']) ?></div>
+                    <div class="event-time">
+                      <?php if((int)$ev['all_day'] === 1): ?>
+                        Todo el día
+                      <?php else: ?>
+                        <?= date('H:i', strtotime($ev['inicio'])) ?>
+                        <?php if($ev['fin']): ?>
+                          - <?= date('H:i', strtotime($ev['fin'])) ?>
+                        <?php endif; ?>
+                      <?php endif; ?>
+                    </div>
+                    <div class="event-actions" onclick="event.stopPropagation()">
+                      <button class="event-edit" onclick="editarEvento(<?= (int)$ev['id'] ?>, <?= htmlspecialchars(json_encode($ev), ENT_QUOTES) ?>)">✏️</button>
+                      <form method="post" action="<?= ENV_APP['BASE_URL'].'/calendario/delete/'.$ev['id'] ?>" 
+                            onsubmit="return confirm('¿Eliminar evento?')" style="display:inline">
+                        <button type="submit" class="event-delete">✕</button>
+                      </form>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
               </div>
-            <?php endforeach; ?>
+              
+              <?php if($hiddenCount > 0): ?>
+                <div class="more-events-indicator">
+                  +<?= $hiddenCount ?> más
+                </div>
+              <?php endif; ?>
+            </div>
           <?php endif; ?>
         </div>
       <?php endfor; ?>
@@ -814,10 +842,8 @@ function editarDesdeDetalle() {
 }
 
 function editarEvento(id, evento) {
-  // Llenar el formulario
   document.getElementById('edit_titulo').value = evento.titulo || '';
   
-  // Convertir fechas al formato datetime-local
   const inicio = new Date(evento.inicio);
   document.getElementById('edit_inicio').value = formatDateTimeLocal(inicio);
   
@@ -832,16 +858,13 @@ function editarEvento(id, evento) {
   document.getElementById('edit_mantenimiento_id').value = evento.mantenimiento_id || '';
   document.getElementById('edit_all_day').checked = evento.all_day == 1;
   
-  // Mantener el mes y año actual para la redirección
   const urlParams = new URLSearchParams(window.location.search);
   document.getElementById('edit_y').value = urlParams.get('y') || <?= $y ?>;
   document.getElementById('edit_m').value = urlParams.get('m') || <?= $m ?>;
   
-  // Configurar action del formulario
   const form = document.getElementById('formEditarEvento');
   form.action = '<?= ENV_APP['BASE_URL'] ?>/calendario/update/' + id;
   
-  // Mostrar modal
   document.getElementById('modalEditarEvento').classList.add('active');
 }
 

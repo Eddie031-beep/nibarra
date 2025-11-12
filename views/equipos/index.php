@@ -571,8 +571,8 @@
         </div>
         
         <div class="form-group">
-          <label>Proveedor</label>
-          <input name="proveedor" placeholder="Ej: TechStore SA">
+          <label>Cliente</label>
+          <input name="cliente" placeholder="Ej: Edgar">
         </div>
         
         <div class="form-group">
