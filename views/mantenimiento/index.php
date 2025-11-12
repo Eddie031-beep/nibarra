@@ -9,6 +9,12 @@ $equipos = Equipo::all();
       ➕ Nuevo Mantenimiento
     </button>
   </div>
+  
+  <!-- Mensaje informativo -->
+  <div style="padding:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:10px;margin-bottom:16px;color:#6ee7b7;font-size:13px">
+    <strong>ℹ️ Nota:</strong> Los mantenimientos completados y facturados se ocultan automáticamente de este tablero. 
+    Puedes consultarlos en la sección <a href="<?= ENV_APP['BASE_URL'] ?>/facturas" style="color:#6ee7b7;text-decoration:underline;font-weight:600">Facturas</a>.
+  </div>
 
   <style>
     .board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -142,7 +148,20 @@ $equipos = Equipo::all();
     <?php foreach($order as $k): $title=$names[$k]; ?>
       <div class="col">
         <h3><?= $title ?> <span style="background:#1f2937;padding:2px 8px;border-radius:999px;font-size:11px"><?= count($cols[$k]) ?></span></h3>
-        <?php foreach($cols[$k] as $t): ?>
+        
+        <?php if(empty($cols[$k]) && $k === 'completado'): ?>
+          <div style="padding:20px;text-align:center;color:#64748b;font-size:12px;line-height:1.6">
+            <div style="font-size:2rem;margin-bottom:8px;opacity:0.5">✅</div>
+            <p style="margin:0"><strong>Los mantenimientos completados y facturados se ocultan automáticamente</strong></p>
+            <p style="margin:8px 0 0 0">Consulta las facturas en la sección correspondiente</p>
+          </div>
+        <?php elseif(empty($cols[$k])): ?>
+          <div style="padding:20px;text-align:center;color:#64748b;font-size:12px">
+            <div style="font-size:2rem;margin-bottom:8px;opacity:0.5">📭</div>
+            <p style="margin:0">No hay mantenimientos aquí</p>
+          </div>
+        <?php else: ?>
+          <?php foreach($cols[$k] as $t): ?>
           <div class="cardx" onclick="verDetalle(<?= $t['id'] ?>)" id="mant-<?= $t['id'] ?>">
             <form method="post" action="<?= ENV_APP['BASE_URL'] ?>/mantenimiento/delete/<?= $t['id'] ?>" onsubmit="return confirm('¿Eliminar este mantenimiento?')" style="display:inline" onclick="event.stopPropagation()">
               <button class="delete-btn" type="submit">🗑️</button>
@@ -189,6 +208,7 @@ $equipos = Equipo::all();
             </div>
           </div>
         <?php endforeach; ?>
+        <?php endif; ?>
       </div>
     <?php endforeach; ?>
   </div>
@@ -476,8 +496,9 @@ $equipos = Equipo::all();
           // Si llega a 100%, notificar que se completó
           if (parseInt(progreso) >= 100) {
             setTimeout(() => {
-              alert('✅ Mantenimiento completado al 100%. Se moverá automáticamente a "Completado".');
-              location.reload();
+              if (confirm('✅ Mantenimiento completado al 100%\n\n📋 Se generará automáticamente una factura\n🔄 El mantenimiento se moverá a "Completado" y se ocultará del tablero\n💾 Podrás consultarlo en la sección de Facturas\n\n¿Continuar?')) {
+                location.reload();
+              }
             }, 500);
           }
         }
@@ -518,35 +539,71 @@ $equipos = Equipo::all();
         console.error('Error:', error);
       }
     }
+    
     async function mover(id, estado) {
-  try {
-    const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/mover', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `id=${id}&estado=${encodeURIComponent(estado)}`
-    });
-    
-    const data = await r.json();
-    
-    if (r.ok && data.ok) {
-      // Si se generó factura, mostrar notificación especial
-      if (data.factura_generada) {
-        if (confirm(`✅ ${data.mensaje || 'Mantenimiento completado'}\n\nFactura: ${data.factura_numero}\n\n¿Quieres ver la factura ahora?`)) {
-          window.location.href = '<?= ENV_APP['BASE_URL'] ?>/facturas';
-        } else {
-          location.reload();
+      // Confirmar si se está moviendo a completado
+      if (estado === 'completado') {
+        if (!confirm('🎯 ¿Marcar como completado?\n\n✅ Se generará automáticamente una factura\n📋 El mantenimiento se ocultará del tablero\n💾 Podrás consultarlo en la sección de Facturas\n\n¿Continuar?')) {
+          return;
         }
-      } else {
-        location.reload();
       }
-    } else {
-      alert('Error al mover el mantenimiento');
+      
+      try {
+        const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/mover', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `id=${id}&estado=${encodeURIComponent(estado)}`
+        });
+        
+        const data = await r.json();
+        
+        if (r.ok && data.ok) {
+          // Si se generó factura, mostrar notificación especial
+          if (data.factura_generada) {
+            if (confirm(`✅ ${data.mensaje || 'Mantenimiento completado'}\n\nFactura: ${data.factura_numero}\n\n¿Quieres ver la factura ahora?`)) {
+              window.location.href = '<?= ENV_APP['BASE_URL'] ?>/facturas';
+            } else {
+              location.reload();
+            }
+          } else {
+            location.reload();
+          }
+        } else {
+          alert('Error al mover el mantenimiento');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión');
+      }
     }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('Error de conexión');
-  }
-}
+    
+    async function toggleTarea(tarea_id, checkbox) {
+      const hecho = checkbox.checked ? 1 : 0;
+      
+      try {
+        const r = await fetch('<?= ENV_APP['BASE_URL'] ?>/mantenimiento/tareaToggle', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `tarea_id=${tarea_id}&hecho=${hecho}`
+        });
+        
+        const data = await r.json();
+        
+        if (r.ok && data.ok) {
+          const taskItem = checkbox.closest('.task-item');
+          if (taskItem) {
+            if (hecho) {
+              taskItem.classList.add('completed');
+            } else {
+              taskItem.classList.remove('completed');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        checkbox.checked = !checkbox.checked;
+      }
+    }
     
     async function crearTarea(mid) {
       const input = document.getElementById('newTaskInput-' + mid);

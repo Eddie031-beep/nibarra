@@ -158,6 +158,14 @@
     <h2>🧾 Facturas de Mantenimiento</h2>
   </div>
   
+  <!-- Mensaje informativo -->
+  <div style="padding:16px;background:#0b1220;border-bottom:1px solid var(--border-color)">
+    <div style="padding:12px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:10px;font-size:13px;color:#93c5fd">
+      <strong>💡 Información:</strong> Aquí se registran automáticamente las facturas de todos los mantenimientos completados. 
+      Los mantenimientos facturados se ocultan del <a href="<?= ENV_APP['BASE_URL'] ?>/mantenimiento"style="color:#93c5fd;text-decoration:underline;font-weight:600">tablero Kanban</a> para mantenerlo organizado.
+</div>
+  </div>
+  
   <?php
     $total = count($facturas);
     $pendientes = count(array_filter($facturas, fn($f) => $f['estado'] === 'pendiente'));

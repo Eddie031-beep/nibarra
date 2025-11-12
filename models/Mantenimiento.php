@@ -3,10 +3,12 @@ require_once BASE_PATH.'/core/DB.php';
 
 class Mantenimiento {
   // Devuelve columnas por estado con progreso manual
+  // MODIFICADO: Excluye mantenimientos completados que ya tienen factura
   public static function porEstado(){
     $sql = "SELECT m.*, e.nombre AS equipo_nombre,
                  COALESCE(tt.total, 0) total_tareas,
-                 COALESCE(m.progreso, 0) AS pct
+                 COALESCE(m.progreso, 0) AS pct,
+                 f.id as factura_id
           FROM mantenimientos m
           JOIN equipos e ON e.id = m.equipo_id
           LEFT JOIN (
@@ -14,6 +16,8 @@ class Mantenimiento {
              FROM mantenimiento_tareas 
              GROUP BY mantenimiento_id
           ) tt ON tt.mantenimiento_id = m.id
+          LEFT JOIN facturas f ON f.mantenimiento_id = m.id
+          WHERE NOT (m.estado = 'completado' AND f.id IS NOT NULL)
           ORDER BY m.updated_at DESC";
     
     $rows = DB::pdo()->query($sql)->fetchAll();

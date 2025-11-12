@@ -138,9 +138,13 @@
     </div>
     
     <div class="factura-body">
-      <!-- Información del Mantenimiento -->
+<!-- Información del Mantenimiento -->
       <div class="info-section">
-        <h3>📋 Información del Servicio</h3>
+        <h3>📋 Información del Servicio Completado</h3>
+        <div style="padding:12px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:12px;font-size:13px;color:#94a3b8">
+          <strong>ℹ️ Mantenimiento completado:</strong> Este servicio fue completado exitosamente y se encuentra archivado. 
+          Los mantenimientos completados y facturados se ocultan automáticamente del tablero Kanban.
+        </div>
         <div class="info-row">
           <div class="info-label">Mantenimiento:</div>
           <div class="info-value"><strong><?= safe($factura['mantenimiento_titulo']) ?></strong></div>
