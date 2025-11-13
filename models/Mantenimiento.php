@@ -39,51 +39,67 @@ class Mantenimiento {
     
     return $cols;
   }
-  
+      
   public static function mover($id, $nuevo_estado){
-    $estados_validos = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
-    
-    if(!in_array($nuevo_estado, $estados_validos)){
-      return false;
-    }
-    
-    $pdo = DB::pdo();
-    
-    // Si se mueve a completado, poner progreso en 100% y generar factura
-    if($nuevo_estado === 'completado'){
-      $pdo->prepare("UPDATE mantenimientos SET estado = ?, progreso = 100, updated_at = NOW() WHERE id = ?")
-          ->execute([$nuevo_estado, $id]);
+      $estados_validos = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
       
-      log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado, 'progreso' => 100]);
-      
-      // Generar factura automáticamente
-      try {
-        require_once BASE_PATH.'/models/Factura.php';
-        $factura = Factura::crearDesdeMantenimiento($id);
-        return ['ok' => true, 'factura_generada' => true, 'factura_numero' => $factura['numero_factura']];
-      } catch (Exception $e) {
-        // Si ya existe factura o hay error, continuar sin romper el flujo
-        error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
-        return ['ok' => true, 'factura_generada' => false];
+      if(!in_array($nuevo_estado, $estados_validos)){
+        return false;
       }
+      
+      $pdo = DB::pdo();
+      
+      // Si se mueve a completado, poner progreso en 100% y guardar costo_real
+      if($nuevo_estado === 'completado'){
+        // Obtener el costo estimado para usarlo como costo_real si no se especificó
+        $stmt = $pdo->prepare("SELECT costo_estimado, costo_real FROM mantenimientos WHERE id = ?");
+        $stmt->execute([$id]);
+        $mant = $stmt->fetch();
+        
+        // Si no hay costo_real, usar el costo_estimado
+        $costo_real = $mant['costo_real'] ?? $mant['costo_estimado'] ?? 0;
+        
+        $pdo->prepare("UPDATE mantenimientos 
+                      SET estado = ?, 
+                          progreso = 100, 
+                          costo_real = ?,
+                          updated_at = NOW() 
+                      WHERE id = ?")
+            ->execute([$nuevo_estado, $costo_real, $id]);
+        
+        log_audit('mantenimientos', $id, 'update', [
+          'estado' => $nuevo_estado, 
+          'progreso' => 100,
+          'costo_real' => $costo_real
+        ]);
+        
+        // Generar factura automáticamente
+        try {
+          require_once BASE_PATH.'/models/Factura.php';
+          $factura = Factura::crearDesdeMantenimiento($id);
+          return ['ok' => true, 'factura_generada' => true, 'factura_numero' => $factura['numero_factura']];
+        } catch (Exception $e) {
+          error_log("Error al generar factura para mantenimiento {$id}: " . $e->getMessage());
+          return ['ok' => true, 'factura_generada' => false];
+        }
+      }
+      
+      // Si se mueve a pendiente, resetear progreso a 0
+      elseif($nuevo_estado === 'pendiente'){
+        $pdo->prepare("UPDATE mantenimientos SET estado = ?, progreso = 0, updated_at = NOW() WHERE id = ?")
+            ->execute([$nuevo_estado, $id]);
+      }
+      
+      // Para otros estados, solo actualizar estado
+      else {
+        $pdo->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() WHERE id = ?")
+            ->execute([$nuevo_estado, $id]);
+      }
+      
+      log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
+      
+      return ['ok' => true];
     }
-    
-    // Si se mueve a pendiente, resetear progreso a 0
-    elseif($nuevo_estado === 'pendiente'){
-      $pdo->prepare("UPDATE mantenimientos SET estado = ?, progreso = 0, updated_at = NOW() WHERE id = ?")
-          ->execute([$nuevo_estado, $id]);
-    }
-    
-    // Para otros estados, solo actualizar estado
-    else {
-      $pdo->prepare("UPDATE mantenimientos SET estado = ?, updated_at = NOW() WHERE id = ?")
-          ->execute([$nuevo_estado, $id]);
-    }
-    
-    log_audit('mantenimientos', $id, 'update', ['estado' => $nuevo_estado]);
-    
-    return ['ok' => true];
-  }
   
   // NUEVO: Actualizar progreso manualmente
   public static function actualizarProgreso($id, $progreso){

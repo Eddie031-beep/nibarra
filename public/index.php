@@ -155,6 +155,12 @@ try {
       return; 
     }
 
+    // ⭐ NUEVA RUTA PARA ACTUALIZAR FACTURA
+    if ($method==='POST' && $route==='/facturas/actualizar') { 
+      (new FacturaController)->actualizar(); 
+      return; 
+    }
+
     if ($method==='POST' && $route==='/facturas/actualizar-estado') { 
       (new FacturaController)->actualizarEstado(); 
       return; 
@@ -164,7 +170,7 @@ try {
       (new FacturaController)->destroy((int)$m[1]); 
       return; 
     }
-
+    
     // MANTENIMIENTO
     if ($method==='POST' && $route==='/mantenimiento/store') { 
       (new MantenimientoController)->store(); 
