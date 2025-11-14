@@ -149,38 +149,42 @@ class Factura {
       throw $e;
     }
   }
-  
-  /**
-   * Obtener factura por ID con sus items
-   */
-  public static function obtenerPorId($id) {
-    $pdo = DB::pdo();
-    
-    $sql = "SELECT f.*, 
-            m.titulo as mantenimiento_titulo,
-            m.tipo as mantenimiento_tipo,
-            e.nombre as equipo_nombre,
-            e.codigo as equipo_codigo
-            FROM facturas f
-            JOIN mantenimientos m ON m.id = f.mantenimiento_id
-            JOIN equipos e ON e.id = m.equipo_id
-            WHERE f.id = ?";
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$id]);
-    $factura = $stmt->fetch();
-    
-    if (!$factura) {
-      return null;
+      
+      /**
+     * Obtener factura por ID con sus items
+     */
+    public static function obtenerPorId($id) {
+      $pdo = DB::pdo();
+      
+      // ⭐ AGREGADO: m.costo_real y m.costo_estimado
+      $sql = "SELECT f.*, 
+              m.id as mantenimiento_id,
+              m.titulo as mantenimiento_titulo,
+              m.tipo as mantenimiento_tipo,
+              m.costo_real as mantenimiento_costo_real,
+              m.costo_estimado as mantenimiento_costo_estimado,
+              e.nombre as equipo_nombre,
+              e.codigo as equipo_codigo
+              FROM facturas f
+              JOIN mantenimientos m ON m.id = f.mantenimiento_id
+              JOIN equipos e ON e.id = m.equipo_id
+              WHERE f.id = ?";
+      
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute([$id]);
+      $factura = $stmt->fetch();
+      
+      if (!$factura) {
+        return null;
+      }
+      
+      // Obtener items
+      $stmt_items = $pdo->prepare("SELECT * FROM factura_items WHERE factura_id = ? ORDER BY id");
+      $stmt_items->execute([$id]);
+      $factura['items'] = $stmt_items->fetchAll();
+      
+      return $factura;
     }
-    
-    // Obtener items
-    $stmt_items = $pdo->prepare("SELECT * FROM factura_items WHERE factura_id = ? ORDER BY id");
-    $stmt_items->execute([$id]);
-    $factura['items'] = $stmt_items->fetchAll();
-    
-    return $factura;
-  }
   
   /**
    * Obtener factura por mantenimiento_id
@@ -231,6 +235,54 @@ class Factura {
     
     return true;
   }
+
+    // Agregar después del método actualizarEstado()
+  public static function actualizar($id, $items) {
+    $pdo = DB::pdo();
+    $pdo->beginTransaction();
+    
+    try {
+      // 1. Eliminar items antiguos
+      $pdo->prepare("DELETE FROM factura_items WHERE factura_id = ?")->execute([$id]);
+      
+      // 2. Recalcular totales
+      $subtotal = 0;
+      foreach ($items as $item) {
+        $subtotal += $item['cantidad'] * $item['precio_unitario'];
+      }
+      
+      $impuesto = round($subtotal * 0.07, 2);
+      $total = $subtotal + $impuesto;
+      
+      // 3. Actualizar factura
+      $pdo->prepare("UPDATE facturas SET subtotal=?, impuesto=?, total=?, updated_at=NOW() WHERE id=?")
+          ->execute([$subtotal, $impuesto, $total, $id]);
+      
+      // 4. Insertar nuevos items
+      $stmt = $pdo->prepare("INSERT INTO factura_items (factura_id, descripcion, cantidad, precio_unitario, subtotal) VALUES (?,?,?,?,?)");
+      
+      foreach ($items as $item) {
+        $item_subtotal = $item['cantidad'] * $item['precio_unitario'];
+        $stmt->execute([
+          $id,
+          $item['descripcion'],
+          $item['cantidad'],
+          $item['precio_unitario'],
+          $item_subtotal
+        ]);
+      }
+      
+      $pdo->commit();
+      log_audit('facturas', $id, 'update', ['items_count' => count($items), 'total' => $total]);
+      
+      return true;
+    } catch (Exception $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+  }
+
+
   
   /**
    * Eliminar factura

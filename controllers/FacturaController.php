@@ -83,6 +83,23 @@ class FacturaController {
       ], 400);
     }
   }
+
+    // Línea 84 - Método faltante
+  public function actualizar() {
+    Auth::requireLogin();
+    Permisos::requireEditar();
+    
+    $factura_id = (int)post('factura_id');
+    $items = json_decode(post('items'), true); // Array de items editados
+    
+    try {
+      Factura::actualizar($factura_id, $items);
+      Response::json(['ok' => true]);
+    } catch (Exception $e) {
+      Response::json(['ok' => false, 'error' => $e->getMessage()], 400);
+    }
+  }
+
   
   /**
    * Descargar factura en PDF
