@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Ingresar | Nibarra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -12,89 +14,79 @@
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #0b1220 0%, #1a1f35 100%);
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0d1117;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #e5e7eb;
+      color: #e6edf3;
       padding: 20px;
     }
 
     .container {
       width: 100%;
-      max-width: 400px;
-      animation: fadeIn 0.6s ease;
+      max-width: 420px;
+      animation: fadeIn 0.5s ease;
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .logo-section {
       text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .logo {
-      font-size: 56px;
-      margin-bottom: 12px;
-      display: inline-block;
-    }
-
-    .logo-text {
-      font-size: 32px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .logo-subtitle {
-      font-size: 14px;
-      color: #94a3b8;
-      margin-top: 8px;
-    }
-
-    .card {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(30, 41, 59, 0.5);
-      border-radius: 20px;
-      padding: 36px 32px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-
-    h1 {
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: #f1f5f9;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      font-size: 14px;
       margin-bottom: 28px;
     }
 
+    .logo {
+      font-size: 48px;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 12px #ff6b35);
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 800;
+      color: #e6edf3;
+      margin-bottom: 4px;
+    }
+
+    .logo-subtitle {
+      font-size: 13px;
+      color: #7d8590;
+    }
+
+    .card {
+      background: #1c2128;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #e6edf3;
+    }
+
+    .subtitle {
+      color: #7d8590;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+
     .error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-      padding: 12px 16px;
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      color: #ff7b72;
+      padding: 12px 14px;
       border-radius: 10px;
-      margin-bottom: 20px;
-      font-size: 14px;
+      margin-bottom: 18px;
+      font-size: 13px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -102,52 +94,63 @@
 
     label {
       display: block;
-      margin-bottom: 8px;
-      color: #cbd5e1;
+      margin-bottom: 6px;
+      color: #e6edf3;
       font-weight: 500;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     input {
       width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: 1px solid #334155;
-      background: #0b1220;
-      color: #e5e7eb;
-      font-size: 15px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #30363d;
+      background: #0d1117;
+      color: #e6edf3;
+      font-size: 14px;
       transition: all 0.3s;
       outline: none;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+      font-family: inherit;
+    }
+
+    input:hover {
+      border-color: #484f58;
     }
 
     input:focus {
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      border-color: #ff6b35;
+      background: #161b22;
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
     }
 
     input::placeholder {
-      color: #64748b;
+      color: #484f58;
+    }
+
+    input:not(:placeholder-shown) {
+      border-color: #00d9ff;
     }
 
     button {
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: 10px;
       border: 0;
       font-weight: 700;
-      font-size: 15px;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      font-size: 14px;
+      background: linear-gradient(135deg, #ff6b35, #d85a2a);
       color: white;
       cursor: pointer;
       transition: all 0.3s;
-      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-      margin-top: 8px;
+      box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
+      margin-top: 6px;
     }
 
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5);
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+      background: linear-gradient(135deg, #d85a2a, #b04820);
     }
 
     button:active {
@@ -156,30 +159,29 @@
 
     .register-link {
       text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #94a3b8;
+      margin-top: 18px;
+      font-size: 13px;
+      color: #7d8590;
     }
 
     .register-link a {
-      color: #a5b4fc;
+      color: #00d9ff;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.2s;
     }
 
     .register-link a:hover {
-      color: #c7d2fe;
+      color: #00b8d9;
       text-decoration: underline;
     }
 
     @media (max-width: 480px) {
       .card {
-        padding: 28px 24px;
+        padding: 26px 22px;
       }
-
       h1 {
-        font-size: 24px;
+        font-size: 20px;
       }
     }
   </style>
@@ -218,10 +220,8 @@
   </div>
 
   <script>
-    // Prevenir clic derecho
     document.addEventListener('contextmenu', e => e.preventDefault());
     
-    // Validación básica
     document.querySelector('form').addEventListener('submit', function(e) {
       const email = this.querySelector('[name="email"]').value;
       const password = this.querySelector('[name="password"]').value;
