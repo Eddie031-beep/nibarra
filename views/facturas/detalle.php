@@ -12,6 +12,7 @@
   display:flex;
   justify-content:space-between;
   align-items:start;
+  box-shadow:0 4px 12px rgba(16,185,129,0.3);
 }
 
 .factura-numero{
@@ -33,7 +34,9 @@
 
 .factura-body{
   padding:2rem;
-  background:var(--bg-card);
+  background:#0f172a;
+  border:1px solid #1e293b;
+  border-radius:0 0 1rem 1rem;
 }
 
 .info-section{
@@ -42,9 +45,9 @@
 
 .info-section h3{
   margin:0 0 1rem 0;
-  color:var(--text-primary);
+  color:#e5e7eb;
   font-size:1.125rem;
-  border-bottom:2px solid var(--border-color);
+  border-bottom:2px solid #334155;
   padding-bottom:0.5rem;
 }
 
@@ -52,16 +55,16 @@
   display:grid;
   grid-template-columns:150px 1fr;
   padding:0.75rem 0;
-  border-bottom:1px solid var(--border-color);
+  border-bottom:1px solid #1e293b;
 }
 
 .info-label{
   font-weight:600;
-  color:var(--text-secondary);
+  color:#94a3b8;
 }
 
 .info-value{
-  color:var(--text-primary);
+  color:#cbd5e1;
 }
 
 .items-table{
@@ -71,37 +74,40 @@
 }
 
 .items-table th{
-  background:var(--bg-secondary);
+  background:#1e293b;
   padding:0.75rem;
   text-align:left;
   font-size:0.875rem;
-  color:var(--text-secondary);
-  border-bottom:2px solid var(--border-color);
+  color:#94a3b8;
+  border-bottom:2px solid #334155;
 }
 
 .items-table td{
   padding:0.75rem;
-  border-bottom:1px solid var(--border-color);
+  border-bottom:1px solid #1e293b;
+  color:#cbd5e1;
 }
 
 .totales{
   margin-top:2rem;
   padding:1.5rem;
-  background:var(--bg-secondary);
+  background:linear-gradient(135deg, #1e293b 0%, #111827 100%);
   border-radius:0.75rem;
+  border:1px solid #334155;
 }
 
 .total-row{
   display:flex;
   justify-content:space-between;
   padding:0.5rem 0;
+  color:#cbd5e1;
 }
 
 .total-row.final{
   font-size:1.5rem;
   font-weight:800;
-  color:var(--success);
-  border-top:2px solid var(--border-color);
+  color:#10b981;
+  border-top:2px solid #334155;
   padding-top:1rem;
   margin-top:0.5rem;
 }
@@ -119,7 +125,12 @@
   gap:0.5rem;
 }
 
-/* Modal de edición */
+.action-btn-factura:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Modal de edición mejorado */
 .modal{
   display:none;
   position:fixed;
@@ -127,7 +138,7 @@
   left:0;
   right:0;
   bottom:0;
-  background:rgba(0,0,0,0.9);
+  background:rgba(0,0,0,0.92);
   z-index:10000;
   align-items:center;
   justify-content:center;
@@ -139,8 +150,8 @@
 }
 
 .modal-content{
-  background:var(--bg-card);
-  border:1px solid var(--border-color);
+  background:linear-gradient(135deg, #1a1f35 0%, #0f172a 100%);
+  border:1px solid #334155;
   border-radius:1rem;
   max-width:800px;
   width:90%;
@@ -188,6 +199,7 @@
   padding:24px;
   max-height:calc(90vh - 180px);
   overflow-y:auto;
+  background:#0f172a;
 }
 
 .modal-body::-webkit-scrollbar{
@@ -195,7 +207,7 @@
 }
 
 .modal-body::-webkit-scrollbar-track{
-  background:var(--bg-primary);
+  background:#0b1220;
   border-radius:4px;
 }
 
@@ -206,23 +218,24 @@
 
 .modal-footer{
   padding:16px 24px;
-  background:var(--bg-secondary);
-  border-top:1px solid var(--border-color);
+  background:#0b1220;
+  border-top:1px solid #334155;
   display:flex;
   gap:8px;
 }
 
 .editor-section{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-color);
+  background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border:1px solid #334155;
   border-radius:0.75rem;
   padding:1rem;
   margin-bottom:1rem;
+  box-shadow:0 4px 12px rgba(16,185,129,0.1);
 }
 
 .editor-section h4{
   margin:0 0 1rem 0;
-  color:var(--text-primary);
+  color:#10b981;
   font-size:1rem;
   display:flex;
   align-items:center;
@@ -241,28 +254,29 @@
   gap:0.5rem;
   align-items:center;
   padding:0.75rem;
-  background:var(--bg-primary);
-  border:1px solid var(--border-color);
+  background:linear-gradient(135deg, #1a1f35 0%, #111827 100%);
+  border:1px solid #374151;
   border-radius:0.5rem;
 }
 
 .item-row input{
   padding:0.5rem;
-  border:1px solid var(--border-color);
-  background:var(--bg-card);
-  color:var(--text-primary);
+  border:1px solid #374151;
+  background:#0b1220;
+  color:#e5e7eb;
   border-radius:0.375rem;
   font-size:0.875rem;
 }
 
 .item-row input:focus{
   outline:none;
-  border-color:var(--success);
+  border-color:#10b981;
+  box-shadow:0 0 0 3px rgba(16,185,129,0.1);
 }
 
 .item-row .btn-delete{
   padding:0.5rem;
-  background:var(--danger);
+  background:#7f1d1d;
   border:none;
   color:white;
   border-radius:0.375rem;
@@ -271,12 +285,12 @@
 }
 
 .item-row .btn-delete:hover{
-  background:#dc2626;
+  background:#991b1b;
 }
 
 .btn-add-item{
   padding:0.75rem 1rem;
-  background:var(--success);
+  background:#10b981;
   border:none;
   color:white;
   border-radius:0.5rem;
@@ -287,11 +301,13 @@
 
 .btn-add-item:hover{
   background:#059669;
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(16,185,129,0.3);
 }
 
 .totales-preview{
-  background:var(--bg-primary);
-  border:1px solid var(--border-color);
+  background:linear-gradient(135deg, #1e293b 0%, #111827 100%);
+  border:1px solid #334155;
   border-radius:0.75rem;
   padding:1rem;
 }
@@ -301,15 +317,27 @@
   justify-content:space-between;
   padding:0.5rem 0;
   font-size:0.9375rem;
+  color:#cbd5e1;
 }
 
 .totales-preview .total-row.final{
   font-size:1.25rem;
   font-weight:800;
-  color:var(--success);
-  border-top:2px solid var(--border-color);
+  color:#10b981;
+  border-top:2px solid #334155;
   margin-top:0.5rem;
   padding-top:1rem;
+}
+
+#costoReal{
+  background:#111827 !important;
+  border:1px solid #10b981 !important;
+  color:#10b981 !important;
+  font-weight:700 !important;
+}
+
+#costoReal:focus{
+  box-shadow:0 0 0 4px rgba(16,185,129,0.2) !important;
 }
 
 @media print {
@@ -353,7 +381,7 @@
         <?php if($canEdit): ?>
           <button class="action-btn-factura" 
                   onclick="abrirEditor()"
-                  style="background:var(--warning);border-color:var(--warning);color:white">
+                  style="background:#f59e0b;border-color:#f59e0b;color:white">
             ✏️ Editar Factura
           </button>
         <?php endif; ?>
@@ -377,7 +405,7 @@
       <!-- Información del Mantenimiento -->
       <div class="info-section">
         <h3>📋 Información del Servicio Completado</h3>
-        <div style="padding:12px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:12px;font-size:13px;color:#94a3b8">
+        <div style="padding:12px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:12px;font-size:13px;color:#6ee7b7">
           <strong>ℹ️ Mantenimiento completado:</strong> Este servicio fue completado exitosamente y se encuentra archivado. 
           Los mantenimientos completados y facturados se ocultan automáticamente del tablero Kanban.
         </div>
@@ -396,8 +424,8 @@
         <div class="info-row">
           <div class="info-label">Costo Real:</div>
           <div class="info-value">
-            <strong>$<?= number_format($factura['costo_real'] ?? $factura['costo_estimado'] ?? 0, 2) ?></strong>
-            <?php if($factura['costo_real'] === null): ?>
+            <strong>$<?= number_format($factura['mantenimiento_costo_real'] ?? $factura['mantenimiento_costo_estimado'] ?? 0, 2) ?></strong>
+            <?php if($factura['mantenimiento_costo_real'] === null): ?>
               <span style="font-size:0.75rem;color:#94a3b8">(estimado)</span>
             <?php endif; ?>
           </div>
@@ -457,7 +485,7 @@
       <?php if($factura['notas']): ?>
         <div class="info-section">
           <h3>📌 Notas</h3>
-          <p style="color:var(--text-secondary);line-height:1.6">
+          <p style="color:#94a3b8;line-height:1.6">
             <?= nl2br(safe($factura['notas'])) ?>
           </p>
         </div>
@@ -469,12 +497,12 @@
         <div style="display:flex;gap:1rem;flex-wrap:wrap">
           <?php if($factura['estado'] === 'pendiente'): ?>
             <button class="action-btn-factura" 
-                    style="background:var(--success);border-color:var(--success);color:white"
+                    style="background:#10b981;border-color:#10b981;color:white"
                     onclick="cambiarEstado(<?= $factura['id'] ?>, 'pagada')">
               ✓ Marcar como Pagada
             </button>
             <button class="action-btn-factura" 
-                    style="background:var(--danger);border-color:var(--danger);color:white"
+                    style="background:#ef4444;border-color:#ef4444;color:white"
                     onclick="cambiarEstado(<?= $factura['id'] ?>, 'cancelada')">
               ✕ Cancelar Factura
             </button>
@@ -482,14 +510,14 @@
           
           <?php if($factura['estado'] === 'pagada'): ?>
             <button class="action-btn-factura" 
-                    style="background:var(--warning);border-color:var(--warning);color:white"
+                    style="background:#f59e0b;border-color:#f59e0b;color:white"
                     onclick="cambiarEstado(<?= $factura['id'] ?>, 'pendiente')">
               ⟲ Marcar como Pendiente
             </button>
           <?php endif; ?>
           
           <button class="action-btn-factura" 
-                  style="background:var(--bg-hover);border-color:var(--border-color);color:var(--text-primary)"
+                  style="background:#374151;border-color:#374151;color:white"
                   onclick="window.print()">
             🖨️ Imprimir
           </button>
@@ -518,9 +546,9 @@
         <input type="number" 
                step="0.01" 
                id="costoReal" 
-               value="<?= $factura['costo_real'] ?? $factura['mantenimiento_costo_estimado'] ?? 0 ?>"
+               value="<?= $factura['mantenimiento_costo_real'] ?? $factura['mantenimiento_costo_estimado'] ?? 0 ?>"
                placeholder="0.00"
-               style="width:100%;padding:12px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);border-radius:0.5rem;font-size:1.125rem;font-weight:700"
+               style="width:100%;padding:12px;border-radius:0.5rem;font-size:1.125rem"
                oninput="actualizarPrimerItem()">
         <p style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem">
           Este valor se usará como base para el primer item de la factura
@@ -540,7 +568,7 @@
       
       <!-- Vista previa de totales -->
       <div class="totales-preview">
-        <h4 style="margin:0 0 1rem 0;color:var(--text-primary)">💵 Vista Previa</h4>
+        <h4 style="margin:0 0 1rem 0;color:#10b981">💵 Vista Previa</h4>
         <div class="total-row">
           <span>Subtotal:</span>
           <span id="previewSubtotal">$0.00</span>
@@ -560,13 +588,13 @@
       <button type="button" 
               class="action-btn-factura" 
               onclick="guardarFactura()"
-              style="background:var(--success);border-color:var(--success);color:white;flex:1">
+              style="background:#10b981;border-color:#10b981;color:white;flex:1">
         💾 Guardar Cambios
       </button>
       <button type="button" 
               class="action-btn-factura" 
               onclick="cerrarEditor()"
-              style="background:var(--bg-hover);border-color:var(--border-color);color:var(--text-primary)">
+              style="background:#374151;border-color:#374151;color:white">
         Cancelar
       </button>
     </div>

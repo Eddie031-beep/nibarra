@@ -130,7 +130,7 @@ try {
       (new EquiposController)->update((int)$m[1]); 
       return; 
     }
-
+    
     // ============================================
     // RUTAS DE FACTURAS
     // ============================================
@@ -155,7 +155,7 @@ try {
       return; 
     }
 
-    // ⭐ NUEVA RUTA PARA ACTUALIZAR FACTURA
+    // ⭐ ASEGÚRATE DE QUE ESTA RUTA EXISTE
     if ($method==='POST' && $route==='/facturas/actualizar') { 
       (new FacturaController)->actualizar(); 
       return; 
@@ -170,7 +170,7 @@ try {
       (new FacturaController)->destroy((int)$m[1]); 
       return; 
     }
-    
+
     // MANTENIMIENTO
     if ($method==='POST' && $route==='/mantenimiento/store') { 
       (new MantenimientoController)->store(); 

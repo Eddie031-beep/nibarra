@@ -236,8 +236,7 @@ class Factura {
     return true;
   }
 
-    // Agregar después del método actualizarEstado()
-  public static function actualizar($id, $items) {
+      public static function actualizar($id, $items, $costo_real = null) {
     $pdo = DB::pdo();
     $pdo->beginTransaction();
     
@@ -258,7 +257,19 @@ class Factura {
       $pdo->prepare("UPDATE facturas SET subtotal=?, impuesto=?, total=?, updated_at=NOW() WHERE id=?")
           ->execute([$subtotal, $impuesto, $total, $id]);
       
-      // 4. Insertar nuevos items
+      // 4. Actualizar costo_real en mantenimientos si se proporciona
+      if ($costo_real !== null) {
+        $stmt = $pdo->prepare("SELECT mantenimiento_id FROM facturas WHERE id = ?");
+        $stmt->execute([$id]);
+        $mantenimiento_id = $stmt->fetchColumn();
+        
+        if ($mantenimiento_id) {
+          $pdo->prepare("UPDATE mantenimientos SET costo_real = ? WHERE id = ?")
+              ->execute([$costo_real, $mantenimiento_id]);
+        }
+      }
+      
+      // 5. Insertar nuevos items
       $stmt = $pdo->prepare("INSERT INTO factura_items (factura_id, descripcion, cantidad, precio_unitario, subtotal) VALUES (?,?,?,?,?)");
       
       foreach ($items as $item) {
@@ -273,9 +284,9 @@ class Factura {
       }
       
       $pdo->commit();
-      log_audit('facturas', $id, 'update', ['items_count' => count($items), 'total' => $total]);
+      log_audit('facturas', $id, 'update', ['items_count' => count($items), 'total' => $total, 'costo_real' => $costo_real]);
       
-      return true;
+      return ['total' => $total];
     } catch (Exception $e) {
       $pdo->rollBack();
       throw $e;
