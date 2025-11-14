@@ -1,40 +1,66 @@
 /* ============================================
    NIBARRA - Sistema de Mantenimiento
    Archivo: public/assets/css/base.css
+   Nueva Paleta: Mint Professional Theme
    Estilos base y variables globales
    ============================================ */
 
 :root {
-  /* Colores principales */
-  --bg-primary: #0b1220;
-  --bg-secondary: #0e1726;
-  --bg-card: #0f172a;
-  --bg-hover: #111827;
+  /* 🎨 NUEVA PALETA DE COLORES - MINT PROFESSIONAL */
+  
+  /* Fondos */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a1f35;
+  --bg-hover: #1e293b;
+  --bg-elevated: #232940;
   
   /* Bordes */
-  --border-color: #1e293b;
-  --border-light: #243044;
-  --border-accent: #2b364b;
+  --border-color: #2a3347;
+  --border-light: #334155;
+  --border-accent: #3d4b66;
   
   /* Texto */
-  --text-primary: #e5e7eb;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-primary: #f0f4f8;
+  --text-secondary: #d1d9e3;
+  --text-muted: #9ba6b8;
+  --text-dim: #6b7280;
   
-  /* Colores de marca */
-  --primary: #4f46e5;
-  --primary-dark: #4338ca;
+  /* Colores de marca - Mint Professional */
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --primary-light: #34d399;
+  
+  --secondary: #1e3a8a;
+  --secondary-dark: #1e40af;
+  --secondary-light: #3b82f6;
+  
+  --accent: #8b5cf6;
+  --accent-dark: #7c3aed;
+  --accent-light: #a78bfa;
+  
+  /* Estados */
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
   --info: #3b82f6;
   
-  /* Sombras */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 30px rgba(2, 6, 23, 0.25);
-  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.4);
+  /* Gradientes modernos */
+  --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-secondary: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  --gradient-accent: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --gradient-dark: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  
+  /* Sombras con tinte verde */
+  --shadow-sm: 0 1px 2px rgba(16, 185, 129, 0.05);
+  --shadow-md: 0 4px 6px rgba(16, 185, 129, 0.1);
+  --shadow-lg: 0 10px 30px rgba(16, 185, 129, 0.15);
+  --shadow-xl: 0 20px 60px rgba(16, 185, 129, 0.2);
+  
+  /* Glow effects */
+  --glow-primary: 0 0 20px rgba(16, 185, 129, 0.3);
+  --glow-secondary: 0 0 20px rgba(30, 58, 138, 0.3);
+  --glow-accent: 0 0 20px rgba(139, 92, 246, 0.3);
   
   /* Espaciado */
   --spacing-xs: 4px;
@@ -44,15 +70,15 @@
   --spacing-xl: 32px;
   
   /* Bordes redondeados */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
   --radius-full: 9999px;
   
   /* Transiciones */
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms ease;
-  --transition-slow: 350ms ease;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ============================================
@@ -73,6 +99,10 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
                system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg-primary);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30, 58, 138, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -138,15 +168,35 @@ button,
   background: var(--bg-hover);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before,
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+button:hover::before,
+.btn:hover::before {
+  left: 100%;
 }
 
 button:hover,
 .btn:hover {
-  background: #1a2332;
-  border-color: #334155;
-  transform: translateY(-1px);
+  background: var(--bg-elevated);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-primary);
 }
 
 button:active,
@@ -160,14 +210,16 @@ button:disabled {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: var(--gradient-primary);
   border-color: var(--primary);
   color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-primary:hover {
-  background: var(--primary-dark);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   border-color: var(--primary-dark);
+  box-shadow: var(--glow-primary);
 }
 
 .btn-success {
@@ -214,7 +266,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 input::placeholder {
@@ -273,11 +325,11 @@ label {
   color: var(--text-muted);
 }
 
-.badge-primary { background: #1e3a8a; color: #93c5fd; border-color: #1e40af; }
-.badge-success { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
-.badge-warning { background: #78350f; color: #fcd34d; border-color: #92400e; }
-.badge-danger { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
-.badge-info { background: #1e3a8a; color: #93c5fd; border-color: #1e40af; }
+.badge-primary { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+.badge-success { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+.badge-warning { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+.badge-danger { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
+.badge-info { background: rgba(59, 130, 246, 0.1); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
 
 /* ============================================
    TABLAS

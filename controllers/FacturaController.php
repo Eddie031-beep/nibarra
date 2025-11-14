@@ -85,21 +85,21 @@ class FacturaController {
   }
 
     // Línea 84 - Método faltante
-  public function actualizar() {
-  Auth::requireLogin();
-  Permisos::requireEditar();
-  
-  $factura_id = (int)post('factura_id');
-  $items = json_decode(post('items'), true);
-  $costo_real = post('costo_real') !== '' ? (float)post('costo_real') : null;
-  
-  try {
-    $resultado = Factura::actualizar($factura_id, $items, $costo_real);
-    Response::json(['ok' => true, 'total' => $resultado['total']]);
-  } catch (Exception $e) {
-    Response::json(['ok' => false, 'error' => $e->getMessage()], 400);
+    public function actualizar() {
+    Auth::requireLogin();
+    Permisos::requireEditar();
+    
+    $factura_id = (int)post('factura_id');
+    $items = json_decode(post('items'), true);
+    $costo_real = post('costo_real') !== '' ? (float)post('costo_real') : null;
+    
+    try {
+      $resultado = Factura::actualizar($factura_id, $items, $costo_real);
+      Response::json(['ok' => true, 'total' => $resultado['total']]);
+    } catch (Exception $e) {
+      Response::json(['ok' => false, 'error' => $e->getMessage()], 400);
+    }
   }
-}
 
   
   /**

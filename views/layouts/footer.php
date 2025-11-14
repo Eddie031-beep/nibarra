@@ -1,6 +1,6 @@
 </main>
 
-<footer style="max-width:1400px;margin:2rem auto;padding:2rem;color:var(--text-secondary);border-top:1px solid var(--border-color)">
+<footer style="max-width:1400px;margin:2rem auto;padding:2rem;color:#9ba6b8;border-top:1px solid #2a3347">
   <div class="jobs-grid">
     <div class="job-card">
       <div class="job-icon">🔧</div>
@@ -21,7 +21,7 @@
   <p style="margin-top:2rem;text-align:center">© <?= date('Y') ?> <?= safe(APP_NAME) ?>. Sistema de Gestión de Mantenimiento.</p>
 </footer>
 
-<!-- ChatBot mejorado -->
+<!-- ChatBot mejorado con Mint Professional -->
 <button class="chatbot-trigger" id="chatbot-trigger" title="Asistente Virtual">
   <span style="font-size:1.75rem">🤖</span>
   <span class="pulse-ring"></span>
@@ -69,7 +69,7 @@
 </div>
 
 <style>
-/* Jobs Grid */
+/* 🎨 Jobs Grid con Mint Professional */
 .jobs-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
@@ -78,8 +78,8 @@
 }
 
 .job-card{
-  background:var(--bg-card);
-  border:1px solid var(--border-color);
+  background:#1a1f35;
+  border:1px solid #2a3347;
   border-radius:1rem;
   padding:1.5rem;
   transition:all .3s;
@@ -87,29 +87,29 @@
 
 .job-card:hover{
   transform:translateY(-4px);
-  box-shadow:0 8px 30px rgba(33,150,243,.2);
-  border-color:var(--accent-blue);
+  box-shadow:0 8px 30px rgba(16,185,129,0.2);
+  border-color:#10b981;
 }
 
 .job-icon{
   font-size:2.5rem;
   margin-bottom:1rem;
-  filter:drop-shadow(0 0 10px rgba(33,150,243,.3));
+  filter:drop-shadow(0 0 10px rgba(16,185,129,0.3));
 }
 
 .job-card h4{
   margin-bottom:0.5rem;
-  color:var(--text-primary);
+  color:#10b981;
   font-size:1.125rem;
 }
 
 .job-card p{
-  color:var(--text-secondary);
+  color:#9ba6b8;
   font-size:0.875rem;
   line-height:1.5;
 }
 
-/* ChatBot Styles */
+/* 🤖 ChatBot Styles con Mint Professional */
 .chatbot-trigger{
   position:fixed;
   right:2rem;
@@ -118,11 +118,11 @@
   height:60px;
   border-radius:50%;
   border:none;
-  background:linear-gradient(135deg, #1a472a, #2d5f3f);
+  background:linear-gradient(135deg, #10b981, #059669);
   color:white;
   font-size:1.75rem;
   cursor:pointer;
-  box-shadow:0 8px 30px rgba(26,71,42,.5);
+  box-shadow:0 8px 30px rgba(16,185,129,0.5);
   transition:all .3s;
   z-index:999;
   display:flex;
@@ -133,7 +133,8 @@
 
 .chatbot-trigger:hover{
   transform:scale(1.1);
-  box-shadow:0 12px 40px rgba(26,71,42,.6);
+  box-shadow:0 12px 40px rgba(16,185,129,0.7);
+  background:linear-gradient(135deg, #059669, #047857);
 }
 
 .pulse-ring{
@@ -141,7 +142,7 @@
   width:100%;
   height:100%;
   border-radius:50%;
-  border:3px solid var(--accent-blue);
+  border:3px solid #10b981;
   animation:pulse 2s infinite;
 }
 
@@ -173,10 +174,10 @@
   max-width:calc(100vw - 4rem);
   height:600px;
   max-height:calc(100vh - 10rem);
-  background:var(--bg-card);
-  border:1px solid var(--border-color);
+  background:#1a1f35;
+  border:1px solid #2a3347;
   border-radius:1rem;
-  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  box-shadow:0 20px 60px rgba(16,185,129,0.2);
   display:none;
   flex-direction:column;
   z-index:1000;
@@ -200,11 +201,12 @@
 
 .chatbot-header{
   padding:1rem 1.5rem;
-  background:linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background:linear-gradient(135deg, #10b981, #059669);
   display:flex;
   align-items:center;
   gap:1rem;
   color:white;
+  box-shadow:0 4px 12px rgba(16,185,129,0.3);
 }
 
 .chatbot-avatar{
@@ -231,7 +233,7 @@
 }
 
 .chatbot-close{
-  background:none;
+  background:rgba(255,255,255,.2);
   border:none;
   color:white;
   font-size:1.5rem;
@@ -246,7 +248,8 @@
 }
 
 .chatbot-close:hover{
-  background:rgba(255,255,255,.2);
+  background:rgba(255,255,255,.3);
+  transform:rotate(90deg);
 }
 
 .chatbot-messages{
@@ -267,7 +270,7 @@
 }
 
 .chatbot-messages::-webkit-scrollbar-thumb{
-  background:var(--border-color);
+  background:#2a3347;
   border-radius:3px;
 }
 
@@ -300,7 +303,7 @@
 }
 
 .bot-message .message-avatar{
-  background:linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background:linear-gradient(135deg, #10b981, #059669);
 }
 
 .user-message{
@@ -308,7 +311,7 @@
 }
 
 .user-message .message-avatar{
-  background:var(--accent-green);
+  background:linear-gradient(135deg, #1e3a8a, #3b82f6);
 }
 
 .message-content{
@@ -320,13 +323,13 @@
 }
 
 .bot-message .message-content{
-  background:var(--bg-secondary);
-  border:1px solid var(--border-color);
+  background:#111827;
+  border:1px solid #2a3347;
   border-bottom-left-radius:0.25rem;
 }
 
 .user-message .message-content{
-  background:linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background:linear-gradient(135deg, #10b981, #059669);
   color:white;
   border-bottom-right-radius:0.25rem;
 }
@@ -342,7 +345,7 @@
 
 .chatbot-input-wrapper{
   padding:1rem 1.5rem;
-  border-top:1px solid var(--border-color);
+  border-top:1px solid #2a3347;
   display:flex;
   gap:0.75rem;
 }
@@ -350,17 +353,17 @@
 .chatbot-input{
   flex:1;
   padding:0.75rem 1rem;
-  border:1px solid var(--border-color);
-  background:var(--bg-secondary);
-  color:var(--text-primary);
+  border:1px solid #334155;
+  background:#111827;
+  color:#f0f4f8;
   border-radius:2rem;
   outline:none;
   transition:all .2s;
 }
 
 .chatbot-input:focus{
-  border-color:var(--accent-blue);
-  box-shadow:0 0 0 3px rgba(33,150,243,.1);
+  border-color:#10b981;
+  box-shadow:0 0 0 3px rgba(16,185,129,.1);
 }
 
 .chatbot-send{
@@ -368,7 +371,7 @@
   height:40px;
   border-radius:50%;
   border:none;
-  background:linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background:linear-gradient(135deg, #10b981, #059669);
   color:white;
   font-size:1.25rem;
   cursor:pointer;
@@ -380,7 +383,7 @@
 
 .chatbot-send:hover{
   transform:scale(1.1);
-  box-shadow:0 4px 15px rgba(33,150,243,.4);
+  box-shadow:0 4px 15px rgba(16,185,129,0.4);
 }
 
 .chatbot-send:disabled{
@@ -397,7 +400,7 @@
 .typing-dot{
   width:8px;
   height:8px;
-  background:var(--text-secondary);
+  background:#9ba6b8;
   border-radius:50%;
   animation:typing 1.4s infinite;
 }
