@@ -24,17 +24,17 @@
     <p>Puedo ayudarte con análisis, predicciones y recomendaciones sobre tu sistema de mantenimiento.</p>
     
     <div class="quick-actions">
+      <button class="quick-action-btn" onclick="sendQuickMessage('equipos agregados recientemente')">
+        🔧 Equipos recientes
+      </button>
       <button class="quick-action-btn" onclick="sendQuickMessage('analiza el sistema')">
         📊 Analizar sistema
       </button>
-      <button class="quick-action-btn" onclick="sendQuickMessage('recomienda acciones')">
-        💡 Recomendaciones
+      <button class="quick-action-btn" onclick="sendQuickMessage('mantenimientos pendientes')">
+        📋 Pendientes
       </button>
-      <button class="quick-action-btn" onclick="sendQuickMessage('predice mantenimientos')">
-        🔮 Predicciones
-      </button>
-      <button class="quick-action-btn" onclick="sendQuickMessage('calcula costos totales')">
-        💰 Calcular costos
+      <button class="quick-action-btn" onclick="sendQuickMessage('cuanto he gastado')">
+        💰 Costos
       </button>
     </div>
   </div>
@@ -53,7 +53,7 @@
       type="text" 
       class="chatbot-input" 
       id="chatbot-input" 
-      placeholder="Escribe tu pregunta... (Ej: analiza el sistema)"
+      placeholder="Pregunta algo... (Ej: equipos recientes)"
       autocomplete="off"
     >
     <button class="chatbot-send" id="chatbot-send" title="Enviar">
@@ -64,12 +64,12 @@
   </div>
   
   <div class="chatbot-footer-info">
-    <span>💡 Tip: Puedes hablar naturalmente</span>
+    <span>💡 Tip: Habla naturalmente</span>
   </div>
 </div>
 
 <style>
-/* 🎨 ChatBot Styles - Diseño tipo ChatGPT */
+/* 🎨 ChatBot Styles */
 .chatbot-trigger{
   position:fixed;
   right:2rem;
@@ -81,7 +81,7 @@
   background:linear-gradient(135deg, #10b981 0%, #059669 100%);
   color:white;
   cursor:pointer;
-  box-shadow:0 8px 30px rgba(16,185,129,0.4), 0 0 0 0 rgba(16,185,129,0.4);
+  box-shadow:0 8px 30px rgba(16,185,129,0.4);
   transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index:999;
   display:flex;
@@ -95,14 +95,9 @@
   box-shadow:0 12px 40px rgba(16,185,129,0.6);
 }
 
+/* 🔥 SIN ANIMACIÓN DE ROTACIÓN */
 .ai-icon{
   font-size:2rem;
-  animation:rotate 20s linear infinite;
-}
-
-@keyframes rotate{
-  from{ transform:rotate(0deg); }
-  to{ transform:rotate(360deg); }
 }
 
 .pulse-ring{
@@ -135,7 +130,7 @@
   background:#ffffff;
   border:1px solid #e5e7eb;
   border-radius:16px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+  box-shadow:0 20px 60px rgba(0,0,0,0.15);
   display:none;
   flex-direction:column;
   z-index:1000;
@@ -147,8 +142,15 @@
   display:flex;
 }
 
+/* 🔥 MINIMIZADO COMPLETAMENTE ARREGLADO */
 .chatbot-container.minimized{
-  height:60px;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+.chatbot-container.minimized .chatbot-header{
+  border-radius:16px !important;
 }
 
 .chatbot-container.minimized .chatbot-messages,
@@ -156,7 +158,9 @@
 .chatbot-container.minimized .chatbot-suggestions,
 .chatbot-container.minimized .chatbot-input-wrapper,
 .chatbot-container.minimized .chatbot-footer-info{
-  display:none;
+  display:none !important;
+  height:0 !important;
+  overflow:hidden !important;
 }
 
 @keyframes slideUp{
@@ -179,6 +183,7 @@
   color:white;
   box-shadow:0 2px 8px rgba(16,185,129,0.2);
   flex-shrink:0;
+  border-radius:16px 16px 0 0;
 }
 
 .chatbot-avatar-container{
@@ -243,6 +248,7 @@
   justify-content:center;
   transition:all .2s;
   font-weight:700;
+  flex-shrink:0;
 }
 
 .chatbot-minimize:hover,
@@ -455,6 +461,7 @@
   padding:0.75rem 1.25rem;
   border-top:1px solid #e5e7eb;
   background:#f9fafb;
+  flex-shrink:0;
 }
 
 .suggestion-chips{
@@ -488,6 +495,7 @@
   gap:0.625rem;
   align-items:center;
   background:white;
+  flex-shrink:0;
 }
 
 .chatbot-attach{
@@ -504,6 +512,7 @@
   display:flex;
   align-items:center;
   justify-content:center;
+  flex-shrink:0;
 }
 
 .chatbot-input{
@@ -537,6 +546,7 @@
   align-items:center;
   justify-content:center;
   box-shadow:0 4px 12px rgba(16,185,129,0.3);
+  flex-shrink:0;
 }
 
 .chatbot-send:hover:not(:disabled){
@@ -556,6 +566,7 @@
   text-align:center;
   font-size:0.75rem;
   color:#6b7280;
+  flex-shrink:0;
 }
 
 @media(max-width:768px){
@@ -602,6 +613,7 @@
   
   close.onclick = () => {
     container.classList.remove('open');
+    container.classList.remove('minimized');
   };
   
   minimize.onclick = () => {
@@ -715,6 +727,10 @@
         body: `pregunta=${encodeURIComponent(question)}`
       });
       
+      if(!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
       
       typing.remove();
@@ -729,11 +745,12 @@
           suggestions.style.display = 'none';
         }
       } else {
-        addMessage('Lo siento, ocurrió un error. Intenta de nuevo.', false);
+        addMessage('❌ Error: ' + (data.error || 'No se pudo procesar la solicitud'), false);
       }
     } catch(error) {
       typing.remove();
-      addMessage('❌ Error de conexión. Por favor, verifica tu conexión a internet.', false);
+      console.error('Error chatbot:', error);
+      addMessage('❌ Error de conexión. Verifica que el servidor esté funcionando.', false);
     } finally {
       send.disabled = false;
       input.focus();
@@ -754,6 +771,7 @@
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape' && container.classList.contains('open')){
       container.classList.remove('open');
+      container.classList.remove('minimized');
     }
   });
   

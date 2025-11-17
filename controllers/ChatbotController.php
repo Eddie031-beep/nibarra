@@ -47,23 +47,25 @@ class ChatbotController {
     
     // ¿Qué equipos se agregaron recientemente?
     if (preg_match('/(que|cuales|cuantos).+(equipos?|maquinas?).+(agregado|añadido|nuevo|reciente|ultimo)/i', $pregunta)) {
+      // 🔥 NUEVO: Solo últimas 24 horas
       $equipos = $pdo->query("
         SELECT nombre, codigo, categoria, marca, modelo, estado, 
                DATE_FORMAT(created_at, '%d/%m/%Y a las %H:%i') as fecha,
                TIMESTAMPDIFF(HOUR, created_at, NOW()) as horas_desde
         FROM equipos 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
         ORDER BY created_at DESC 
         LIMIT 10
       ")->fetchAll();
       
       if (empty($equipos)) {
         return [
-          'text' => "❌ No hay equipos registrados aún en el sistema.",
-          'sugerencias' => ["Agregar nuevo equipo"]
+          'text' => "ℹ️ **No se han agregado equipos en las últimas 24 horas.**\n\nEl último registro de equipos fue hace más de un día.",
+          'sugerencias' => ["Ver todos los equipos", "Estado del sistema", "Agregar nuevo equipo"]
         ];
       }
       
-      $resp = "🔧 **Equipos agregados recientemente:**\n\n";
+      $resp = "🔧 **Equipos agregados recientemente (últimas 24 horas):**\n\n";
       
       foreach ($equipos as $i => $eq) {
         $estadoIcon = ['operativo' => '✅', 'fuera_de_servicio' => '⚠️', 'baja' => '❌'][$eq['estado']] ?? '❓';
@@ -79,12 +81,15 @@ class ChatbotController {
         $resp .= "   • Agregado: {$tiempo} ({$eq['fecha']})\n\n";
       }
       
+      $total = count($equipos);
+      $resp .= "✅ **Total:** {$total} equipo(s) nuevo(s) en las últimas 24 horas\n";
+      
       return [
         'text' => $resp,
         'sugerencias' => [
           "Ver equipos operativos",
           "Equipos fuera de servicio",
-          "Agregar nuevo equipo"
+          "Estado del sistema"
         ]
       ];
     }
